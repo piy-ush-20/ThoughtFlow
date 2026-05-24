@@ -9,19 +9,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun WaveBar(
     fraction: Float,
     color: Color,
-    maxHeight: androidx.compose.ui.unit.Dp = 20.dp
+    maxHeight: Dp = 20.dp,
 ) {
     Box(
         modifier = Modifier
             .width(4.dp)
-            .height(maxHeight * fraction)
+            .height(maxHeight * fraction.coerceIn(0.15f, 1f))
             .clip(RoundedCornerShape(50))
-            .background(color)
+            .background(color),
     )
 }
