@@ -11,6 +11,7 @@ import com.piyush.thoughtflow.domain.repository.DocumentRepository
 import com.piyush.thoughtflow.domain.repository.SettingsRepository
 import com.piyush.thoughtflow.domain.repository.SpeechRepository
 import com.piyush.thoughtflow.domain.usecase.DeleteDocumentUseCase
+import com.piyush.thoughtflow.domain.usecase.DetectOnDeviceAiCapabilitiesUseCase
 import com.piyush.thoughtflow.domain.usecase.FormatTranscriptUseCase
 import com.piyush.thoughtflow.domain.usecase.GetDocumentUseCase
 import com.piyush.thoughtflow.domain.usecase.ListDocumentsUseCase
@@ -58,6 +59,10 @@ object DataProvideModule {
 
     @Provides
     fun provideFormatTranscript(ai: AIRepository) = FormatTranscriptUseCase(ai)
+
+    @Provides
+    fun provideDetectOnDeviceAiCapabilities(ai: AIRepository) =
+        DetectOnDeviceAiCapabilitiesUseCase(ai)
 
     @Provides
     fun provideSaveDocument(docs: DocumentRepository) = SaveDocumentUseCase(docs)

@@ -6,6 +6,7 @@ import com.piyush.thoughtflow.domain.model.DocumentStatus
 import com.piyush.thoughtflow.domain.model.ExportFormat
 import com.piyush.thoughtflow.domain.model.ExportResult
 import com.piyush.thoughtflow.domain.model.FormattedDocument
+import com.piyush.thoughtflow.domain.model.OnDeviceAiCapabilities
 import com.piyush.thoughtflow.domain.repository.AIRepository
 import com.piyush.thoughtflow.domain.repository.DocumentRepository
 import com.piyush.thoughtflow.domain.repository.ExportRepository
@@ -37,6 +38,13 @@ class FormatTranscriptUseCase(
         require(text.isNotBlank()) { "Transcript is empty" }
         return aiRepository.format(text.trim())
     }
+}
+
+class DetectOnDeviceAiCapabilitiesUseCase(
+    private val aiRepository: AIRepository,
+) {
+    suspend operator fun invoke(): OnDeviceAiCapabilities =
+        aiRepository.detectOnDeviceCapabilities()
 }
 
 class SaveDocumentUseCase(
