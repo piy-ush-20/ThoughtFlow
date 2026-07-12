@@ -14,7 +14,18 @@ class AdaptiveDocumentFormatterTest {
     @Test
     fun fallsBackToHeuristicWhenNanoUnavailable() = runBlocking {
         val heuristic = HeuristicDocumentFormatter()
-        val nano = GeminiNanoFormatter()
+        val nano = GeminiNanoFormatter(
+            OnDeviceAiCapabilityDetector(
+                object : DeviceAiProbes {
+                    override fun isAiCoreInstalled() = false
+                    override fun aiCoreVersionName(): String? = null
+                    override fun isGenAiSdkPresent() = false
+                    override fun checkGeminiNanoFeatureStatus() =
+                        com.piyush.thoughtflow.domain.model.OnDeviceFeatureStatus.Unavailable
+                    override fun isOnDeviceSpeechAvailable() = false
+                },
+            ),
+        )
         val settings = FakeSettings(AiPreferences(preferOnDevice = true, allowCloud = false))
         val adaptive = AdaptiveDocumentFormatter(
             geminiNano = nano,
