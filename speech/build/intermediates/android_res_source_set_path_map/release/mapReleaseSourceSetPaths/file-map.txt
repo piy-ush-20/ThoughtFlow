@@ -1,9 +1,0 @@
-com.piyush.thoughtflow.speech-pngs-0 /workspace/speech/build/generated/res/pngs/release
-com.piyush.thoughtflow.speech-updated_navigation_xml-1 /workspace/speech/build/generated/updated_navigation_xml/release
-com.piyush.thoughtflow.speech-mergeReleaseResources-2 /workspace/speech/build/intermediates/incremental/release/mergeReleaseResources/merged.dir
-com.piyush.thoughtflow.speech-mergeReleaseResources-3 /workspace/speech/build/intermediates/incremental/release/mergeReleaseResources/stripped.dir
-com.piyush.thoughtflow.speech-release-4 /workspace/speech/build/intermediates/merged_res/release/mergeReleaseResources
-com.piyush.thoughtflow.speech-release-5 /workspace/speech/build/intermediates/packaged_res/release/packageReleaseResources
-com.piyush.thoughtflow.speech-main-6 /workspace/speech/src/main/res
-com.piyush.thoughtflow.speech-release-7 /workspace/speech/src/release/res
-gradleHome-0 /home/ubuntu/.gradle

@@ -1,2 +1,0 @@
--keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.editor.EditorViewModel
--keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.editor.EditorViewModel

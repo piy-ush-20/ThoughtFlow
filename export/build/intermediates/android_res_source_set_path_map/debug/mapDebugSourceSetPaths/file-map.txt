@@ -1,9 +1,0 @@
-com.piyush.thoughtflow.export-pngs-0 /workspace/export/build/generated/res/pngs/debug
-com.piyush.thoughtflow.export-updated_navigation_xml-1 /workspace/export/build/generated/updated_navigation_xml/debug
-com.piyush.thoughtflow.export-mergeDebugResources-2 /workspace/export/build/intermediates/incremental/debug/mergeDebugResources/merged.dir
-com.piyush.thoughtflow.export-mergeDebugResources-3 /workspace/export/build/intermediates/incremental/debug/mergeDebugResources/stripped.dir
-com.piyush.thoughtflow.export-debug-4 /workspace/export/build/intermediates/merged_res/debug/mergeDebugResources
-com.piyush.thoughtflow.export-debug-5 /workspace/export/build/intermediates/packaged_res/debug/packageDebugResources
-com.piyush.thoughtflow.export-debug-6 /workspace/export/src/debug/res
-com.piyush.thoughtflow.export-main-7 /workspace/export/src/main/res
-gradleHome-0 /home/ubuntu/.gradle

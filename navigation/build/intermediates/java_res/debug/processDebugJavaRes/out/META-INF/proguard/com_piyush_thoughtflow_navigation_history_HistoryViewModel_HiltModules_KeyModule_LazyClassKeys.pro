@@ -1,1 +1,0 @@
--keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.history.HistoryViewModel
