@@ -4,17 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.MaterialTheme
-import com.piyush.thoughtflow.ui.home.HomeScreen
+import com.piyush.thoughtflow.navigation.ThoughtFlowNavHost
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
-//                LoginScreen()
-                HomeScreen()
+            ThoughtFlowTheme {
+                ThoughtFlowNavHost()
             }
         }
     }

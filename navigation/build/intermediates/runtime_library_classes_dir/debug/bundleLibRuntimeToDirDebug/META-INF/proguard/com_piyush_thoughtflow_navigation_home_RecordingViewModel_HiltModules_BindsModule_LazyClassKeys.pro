@@ -1,0 +1,1 @@
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.home.RecordingViewModel

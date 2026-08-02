@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.piyush.thoughtflow.ai.AdaptiveDocumentFormatterTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-02T04:42:18.575Z" hostname="cursor" time="0.354">
+  <properties/>
+  <testcase name="fallsBackToHeuristicWhenNanoUnavailable" classname="com.piyush.thoughtflow.ai.AdaptiveDocumentFormatterTest" time="0.347"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

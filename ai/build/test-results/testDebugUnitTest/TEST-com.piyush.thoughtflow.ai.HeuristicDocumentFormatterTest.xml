@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.piyush.thoughtflow.ai.HeuristicDocumentFormatterTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-08-02T04:42:18.934Z" hostname="cursor" time="0.006">
+  <properties/>
+  <testcase name="titleUsesFirstSentence" classname="com.piyush.thoughtflow.ai.HeuristicDocumentFormatterTest" time="0.006"/>
+  <testcase name="formatsSpokenParagraphIntoMarkdown" classname="com.piyush.thoughtflow.ai.HeuristicDocumentFormatterTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
