@@ -43,20 +43,26 @@ class RecordingViewModel @Inject constructor(
         .map { state -> (state as? VoiceSessionState.Error)?.message }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    fun onHoldStart() {
-        val current = sessionState.value
-        if (current is VoiceSessionState.Idle ||
-            current is VoiceSessionState.Saved ||
-            current is VoiceSessionState.Error
-        ) {
-            pipeline.startSession()
+    val isCapturing: StateFlow<Boolean> = pipeline.state
+        .map { state ->
+            state is VoiceSessionState.Listening || state is VoiceSessionState.Transcribing
         }
-    }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
-    fun onHoldEnd() {
-        val current = sessionState.value
-        if (current is VoiceSessionState.Listening || current is VoiceSessionState.Transcribing) {
-            pipeline.finishSession()
+    fun onMicClicked() {
+        when (sessionState.value) {
+            is VoiceSessionState.Idle,
+            is VoiceSessionState.Saved,
+            is VoiceSessionState.Error,
+            -> pipeline.startSession()
+
+            is VoiceSessionState.Listening,
+            is VoiceSessionState.Transcribing,
+            -> pipeline.finishSession()
+
+            is VoiceSessionState.Formatting,
+            is VoiceSessionState.Editing,
+            -> Unit // ignore taps while processing / editing navigation
         }
     }
 

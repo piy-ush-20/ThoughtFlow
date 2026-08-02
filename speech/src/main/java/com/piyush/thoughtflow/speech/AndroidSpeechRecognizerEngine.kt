@@ -20,18 +20,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.min
 import kotlin.math.pow
 
 /**
- * Continuous speech recognition using the platform [SpeechRecognizer].
+ * Platform [SpeechRecognizer] engine tuned for reliable dictation.
  *
- * Error 11 ([SpeechRecognizer.ERROR_SERVER_DISCONNECTED]) usually means the
- * recognition service binder died. Reusing that instance causes a tight restart
- * loop. We destroy + recreate before every restart, cancel pending restarts on
- * stop, and ignore teardown errors after the user session ends.
+ * - One listening cycle at a time; restarts only while the session is active
+ * - On stop, waits for the final [onResults]/[onError] before tearing down
+ * - Recreates the recognizer after binder failures (error 11)
  */
 @Singleton
 class AndroidSpeechRecognizerEngine @Inject constructor(
@@ -41,7 +41,9 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
     private val mainHandler = Handler(Looper.getMainLooper())
     private var recognizer: SpeechRecognizer? = null
     private var sessionActive = false
+    private var stopping = false
     private var isStarting = false
+    private var heardSpeech = false
     private var consecutiveFailures = 0
     private var committedFinal = StringBuilder()
 
@@ -71,50 +73,54 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
             }
             cancelPendingWork()
             sessionActive = true
+            stopping = false
             consecutiveFailures = 0
+            heardSpeech = false
             isStarting = false
             committedFinal = StringBuilder()
             _transcript.value = Transcript()
             _audioLevel.value = 0f
-            recreateRecognizer()
+            ensureRecognizer(forceRecreate = true)
             beginListeningLocked()
         }
     }
 
     override fun stopListening() {
         mainHandler.post {
-            // End session first so teardown callbacks are ignored.
+            if (!sessionActive && !stopping) {
+                return@post
+            }
+            cancelPendingRestarts()
+            stopping = true
             sessionActive = false
-            cancelPendingWork()
             isStarting = false
-            _isListening.value = false
             _audioLevel.value = 0f
 
+            promotePartialToFinal()
+
             val active = recognizer
-            runCatching { active?.stopListening() }
-
-            // Destroy after a short delay so final results can still arrive.
-            mainHandler.postDelayed({
-                if (!sessionActive) {
-                    destroyRecognizer()
-                }
-            }, TOKEN_TEARDOWN, TEARDOWN_DELAY_MS)
-
-            _transcript.update { current ->
-                val finalText = current.finalText.ifBlank {
-                    listOf(committedFinal.toString(), current.partialText)
-                        .filter { it.isNotBlank() }
-                        .joinToString(" ")
-                        .trim()
-                }
-                Transcript(partialText = "", finalText = finalText)
+            if (active == null) {
+                finishStop()
+                return@post
             }
+
+            // Ask the service for finals; keep listener alive until callback.
+            runCatching { active.stopListening() }
+
+            // Safety net if the service never callbacks.
+            mainHandler.postDelayed({
+                if (stopping) {
+                    Log.w(TAG, "Stop timed out waiting for final callback")
+                    finishStop()
+                }
+            }, TOKEN_STOP_TIMEOUT, STOP_TIMEOUT_MS)
         }
     }
 
     override fun cancel() {
         mainHandler.post {
             sessionActive = false
+            stopping = false
             cancelPendingWork()
             isStarting = false
             _isListening.value = false
@@ -132,6 +138,7 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
     override fun destroy() {
         mainHandler.post {
             sessionActive = false
+            stopping = false
             cancelPendingWork()
             isStarting = false
             _isListening.value = false
@@ -139,8 +146,42 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
         }
     }
 
-    private fun recreateRecognizer() {
-        destroyRecognizer()
+    private fun finishStop() {
+        cancelPendingWork()
+        stopping = false
+        _isListening.value = false
+        _audioLevel.value = 0f
+        promotePartialToFinal()
+        // Delay destroy slightly so binder can settle.
+        mainHandler.postDelayed({
+            if (!sessionActive && !stopping) {
+                destroyRecognizer()
+            }
+        }, TOKEN_TEARDOWN, TEARDOWN_DELAY_MS)
+    }
+
+    private fun promotePartialToFinal() {
+        _transcript.update { current ->
+            val finalText = current.finalText.ifBlank {
+                listOf(committedFinal.toString(), current.partialText)
+                    .filter { it.isNotBlank() }
+                    .joinToString(" ")
+                    .trim()
+            }.ifBlank {
+                committedFinal.toString().trim()
+            }
+            if (finalText.isNotBlank() && committedFinal.isEmpty()) {
+                committedFinal.append(finalText)
+            }
+            Transcript(partialText = "", finalText = finalText)
+        }
+    }
+
+    private fun ensureRecognizer(forceRecreate: Boolean = false) {
+        if (forceRecreate) {
+            destroyRecognizer()
+        }
+        if (recognizer != null) return
         recognizer = SpeechRecognizer.createSpeechRecognizer(context).also {
             it.setRecognitionListener(listener)
         }
@@ -154,25 +195,30 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
     }
 
     private fun beginListeningLocked() {
-        if (!sessionActive || isStarting) return
-        val engine = recognizer ?: run {
-            recreateRecognizer()
-            recognizer
-        } ?: return
+        if (!sessionActive || stopping || isStarting) return
+        ensureRecognizer(forceRecreate = false)
+        val engine = recognizer ?: return
 
+        val locale = Locale.getDefault()
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
             putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.packageName)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1500L)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale.toLanguageTag())
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, locale.toLanguageTag())
+            // Longer silence windows so natural pauses don't end the utterance too early.
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2_000L)
             putExtra(
                 RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,
-                1000L,
+                2_000L,
             )
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 1_000L)
         }
         isStarting = true
+        heardSpeech = false
         _isListening.value = true
+        Log.d(TAG, "startListening locale=${locale.toLanguageTag()}")
         runCatching {
             engine.startListening(intent)
         }.onFailure { e ->
@@ -180,13 +226,13 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
             Log.e(TAG, "startListening failed", e)
             _isListening.value = false
             if (sessionActive) {
-                scheduleRestart()
+                scheduleRestart(recreate = true)
             }
         }
     }
 
-    private fun scheduleRestart() {
-        if (!sessionActive) return
+    private fun scheduleRestart(recreate: Boolean) {
+        if (!sessionActive || stopping) return
         cancelPendingRestarts()
         consecutiveFailures += 1
         if (consecutiveFailures > MAX_CONSECUTIVE_FAILURES) {
@@ -196,8 +242,8 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
             destroyRecognizer()
             _errors.tryEmit(
                 SpeechError.RecognitionFailed(
-                    message = "Speech recognition unavailable. Check Google speech services and try again.",
-                    code = SpeechRecognizer.ERROR_SERVER_DISCONNECTED,
+                    message = "Speech recognition unavailable. Check Google / speech services and try again.",
+                    code = SpeechRecognizer.ERROR_CLIENT,
                 ),
             )
             return
@@ -207,21 +253,10 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
             RESTART_MAX_DELAY_MS,
         )
         mainHandler.postDelayed({
-            if (!sessionActive) return@postDelayed
-            recreateRecognizer()
+            if (!sessionActive || stopping) return@postDelayed
+            if (recreate) ensureRecognizer(forceRecreate = true)
             beginListeningLocked()
         }, TOKEN_RESTART, delay)
-    }
-
-    private fun scheduleSuccessfulRestart() {
-        if (!sessionActive) return
-        cancelPendingRestarts()
-        consecutiveFailures = 0
-        mainHandler.postDelayed({
-            if (!sessionActive) return@postDelayed
-            recreateRecognizer()
-            beginListeningLocked()
-        }, TOKEN_RESTART, RESTART_SUCCESS_DELAY_MS)
     }
 
     private fun cancelPendingRestarts() {
@@ -231,6 +266,7 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
     private fun cancelPendingWork() {
         cancelPendingRestarts()
         mainHandler.removeCallbacksAndMessages(TOKEN_TEARDOWN)
+        mainHandler.removeCallbacksAndMessages(TOKEN_STOP_TIMEOUT)
     }
 
     private fun appendFinal(text: String) {
@@ -240,6 +276,15 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
         _transcript.value = Transcript(
             partialText = "",
             finalText = committedFinal.toString(),
+        )
+    }
+
+    private fun updatePartial(partial: String) {
+        val prefix = committedFinal.toString()
+        val display = listOf(prefix, partial).filter { it.isNotBlank() }.joinToString(" ")
+        _transcript.value = Transcript(
+            partialText = display,
+            finalText = prefix,
         )
     }
 
@@ -259,68 +304,83 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
         override fun onReadyForSpeech(params: Bundle?) {
             isStarting = false
             consecutiveFailures = 0
+            Log.d(TAG, "onReadyForSpeech")
         }
 
         override fun onBeginningOfSpeech() {
             isStarting = false
+            heardSpeech = true
+            Log.d(TAG, "onBeginningOfSpeech")
         }
 
         override fun onBufferReceived(buffer: ByteArray?) = Unit
         override fun onEvent(eventType: Int, params: Bundle?) = Unit
 
         override fun onRmsChanged(rmsdB: Float) {
-            if (!sessionActive) return
+            if (!sessionActive && !stopping) return
             val normalized = ((rmsdB + 2f) / 12f).coerceIn(0f, 1f)
             _audioLevel.value = normalized.pow(0.85f)
         }
 
         override fun onPartialResults(partialResults: Bundle?) {
-            if (!sessionActive) return
+            if (!sessionActive && !stopping) return
             val partial = partialResults
                 ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 ?.firstOrNull()
                 .orEmpty()
-            val prefix = committedFinal.toString()
-            val display = listOf(prefix, partial).filter { it.isNotBlank() }.joinToString(" ")
-            _transcript.value = Transcript(
-                partialText = display,
-                finalText = prefix,
-            )
+            if (partial.isNotBlank()) {
+                heardSpeech = true
+                updatePartial(partial)
+            }
         }
 
         override fun onResults(results: Bundle?) {
             isStarting = false
-            val text = results
-                ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                ?.firstOrNull()
-                .orEmpty()
+            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty()
+            val text = matches.firstOrNull().orEmpty()
+            Log.d(TAG, "onResults text='${text.take(80)}' stopping=$stopping sessionActive=$sessionActive")
             if (text.isNotBlank()) {
                 appendFinal(text)
             }
-            if (sessionActive) {
-                scheduleSuccessfulRestart()
-            } else {
-                _isListening.value = false
-                _audioLevel.value = 0f
+            when {
+                stopping -> finishStop()
+                sessionActive -> {
+                    consecutiveFailures = 0
+                    // Continue dictation for as long as the session is open.
+                    mainHandler.postDelayed({
+                        if (sessionActive && !stopping) {
+                            beginListeningLocked()
+                        }
+                    }, TOKEN_RESTART, RESTART_SUCCESS_DELAY_MS)
+                }
+                else -> {
+                    _isListening.value = false
+                    _audioLevel.value = 0f
+                }
             }
         }
 
         override fun onEndOfSpeech() {
             isStarting = false
+            Log.d(TAG, "onEndOfSpeech")
         }
 
         override fun onError(error: Int) {
             isStarting = false
+            val label = errorLabel(error)
+            Log.w(TAG, "onError code=$error ($label) sessionActive=$sessionActive stopping=$stopping heardSpeech=$heardSpeech")
 
-            // Expected when the user releases the mic / we tear down the service.
-            if (!sessionActive) {
-                _isListening.value = false
-                _audioLevel.value = 0f
-                Log.d(TAG, "Ignoring speech error code=$error after session end")
+            if (stopping) {
+                // NO_MATCH / CLIENT after stop is normal if the user paused mid-phrase.
+                finishStop()
                 return
             }
 
-            Log.w(TAG, "Speech error code=$error (${errorLabel(error)})")
+            if (!sessionActive) {
+                _isListening.value = false
+                _audioLevel.value = 0f
+                return
+            }
 
             when (error) {
                 SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> {
@@ -330,11 +390,25 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
                     destroyRecognizer()
                     _errors.tryEmit(SpeechError.PermissionDenied())
                 }
-                else -> {
-                    // ERROR_SERVER_DISCONNECTED (11), BUSY, NO_MATCH, TIMEOUT, NETWORK, etc.
-                    // Always recreate the recognizer — reusing a disconnected binder loops forever.
-                    scheduleRestart()
+                SpeechRecognizer.ERROR_NO_MATCH,
+                SpeechRecognizer.ERROR_SPEECH_TIMEOUT,
+                -> {
+                    // Keep listening — user may still be holding/toggled on.
+                    scheduleRestart(recreate = false)
                 }
+                SpeechRecognizer.ERROR_RECOGNIZER_BUSY,
+                SpeechRecognizer.ERROR_CLIENT,
+                SpeechRecognizer.ERROR_SERVER_DISCONNECTED,
+                -> {
+                    scheduleRestart(recreate = true)
+                }
+                SpeechRecognizer.ERROR_NETWORK,
+                SpeechRecognizer.ERROR_NETWORK_TIMEOUT,
+                SpeechRecognizer.ERROR_SERVER,
+                -> {
+                    scheduleRestart(recreate = true)
+                }
+                else -> scheduleRestart(recreate = true)
             }
         }
     }
@@ -358,12 +432,14 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
 
     companion object {
         private const val TAG = "AndroidSpeechEngine"
-        private const val RESTART_SUCCESS_DELAY_MS = 350L
-        private const val RESTART_BASE_DELAY_MS = 500L
-        private const val RESTART_MAX_DELAY_MS = 2_500L
-        private const val TEARDOWN_DELAY_MS = 250L
-        private const val MAX_CONSECUTIVE_FAILURES = 8
+        private const val RESTART_SUCCESS_DELAY_MS = 300L
+        private const val RESTART_BASE_DELAY_MS = 400L
+        private const val RESTART_MAX_DELAY_MS = 2_000L
+        private const val TEARDOWN_DELAY_MS = 300L
+        private const val STOP_TIMEOUT_MS = 2_000L
+        private const val MAX_CONSECUTIVE_FAILURES = 10
         private val TOKEN_RESTART = Any()
         private val TOKEN_TEARDOWN = Any()
+        private val TOKEN_STOP_TIMEOUT = Any()
     }
 }

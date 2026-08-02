@@ -2,7 +2,6 @@ package com.piyush.thoughtflow.navigation.home
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
 import android.view.HapticFeedbackConstants
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,7 +14,8 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +47,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
@@ -97,15 +96,14 @@ fun HomeRoute(
         transcript = transcript,
         audioLevel = audioLevel,
         statusLabel = when (state) {
-            is VoiceSessionState.Listening -> "Listening…"
-            is VoiceSessionState.Transcribing -> "Transcribing…"
+            is VoiceSessionState.Listening -> "Listening… tap mic to finish"
+            is VoiceSessionState.Transcribing -> "Transcribing… tap mic to finish"
             is VoiceSessionState.Formatting -> "Formatting…"
             else -> "Your thoughts, captured"
         },
         onListClick = onOpenHistory,
         onSettingsClick = onOpenSettings,
-        onHoldStart = viewModel::onHoldStart,
-        onHoldEnd = viewModel::onHoldEnd,
+        onMicClick = viewModel::onMicClicked,
         hasMicPermission = {
             ContextCompat.checkSelfPermission(
                 it,
@@ -134,8 +132,7 @@ fun HomeScreen(
     statusLabel: String,
     onListClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onHoldStart: () -> Unit,
-    onHoldEnd: () -> Unit,
+    onMicClick: () -> Unit,
     hasMicPermission: (android.content.Context) -> Boolean,
 ) {
     val context = LocalContext.current
@@ -145,7 +142,7 @@ fun HomeScreen(
     ) { granted ->
         if (granted) {
             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onHoldStart()
+            onMicClick()
         }
     }
 
@@ -294,40 +291,23 @@ fun HomeScreen(
                                 end = Offset(92f, 92f),
                             ),
                         )
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = {
-                                    val granted = hasMicPermission(context)
-                                    if (!granted) {
-                                        permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                                        return@detectTapGestures
-                                    }
-                                    val haptic = if (Build.VERSION.SDK_INT >= 30) {
-                                        HapticFeedbackConstants.GESTURE_START
-                                    } else {
-                                        HapticFeedbackConstants.LONG_PRESS
-                                    }
-                                    view.performHapticFeedback(haptic)
-                                    onHoldStart()
-                                    try {
-                                        awaitRelease()
-                                    } finally {
-                                        val endHaptic = if (Build.VERSION.SDK_INT >= 30) {
-                                            HapticFeedbackConstants.GESTURE_END
-                                        } else {
-                                            HapticFeedbackConstants.VIRTUAL_KEY
-                                        }
-                                        view.performHapticFeedback(endHaptic)
-                                        onHoldEnd()
-                                    }
-                                },
-                            )
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) {
+                            val granted = hasMicPermission(context)
+                            if (!granted) {
+                                permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                return@clickable
+                            }
+                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                            onMicClick()
                         },
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         Icons.Outlined.Mic,
-                        contentDescription = if (isCapturing) "Release to finish" else "Hold to speak",
+                        contentDescription = if (isCapturing) "Tap to finish" else "Tap to speak",
                         tint = Color.White,
                         modifier = Modifier.size(38.dp),
                     )
@@ -347,7 +327,7 @@ fun HomeScreen(
                 }
             } else {
                 Text(
-                    text = "Hold to speak",
+                    text = "Tap to speak",
                     style = TextStyle(
                         fontSize = 14.sp,
                         color = NavyDark.copy(alpha = 0.5f),
