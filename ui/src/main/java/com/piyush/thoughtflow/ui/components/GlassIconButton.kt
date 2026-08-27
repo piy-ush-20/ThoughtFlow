@@ -13,18 +13,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-
-private val GlassWhite      = Color(0x33FFFFFF)
-private val GlassBorder     = Color(0x55FFFFFF)
+import com.piyush.thoughtflow.ui.theme.GlassBorder
+import com.piyush.thoughtflow.ui.theme.GlassWhite
 
 @Composable
 fun GlassIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     contentDescription: String,
-    content: @Composable BoxScope.() -> Unit
+    content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
         modifier = modifier
@@ -34,10 +32,10 @@ fun GlassIconButton(
             .border(1.dp, GlassBorder, CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication        = null,
-                onClick           = onClick
+                indication = null,
+                onClick = onClick,
             ),
         contentAlignment = Alignment.Center,
-        content          = content
+        content = content,
     )
 }
