@@ -37,8 +37,8 @@ is exposed.
 | `:processing` | Voice → document pipeline orchestration |
 | `:editor` | Document editor + save/export actions |
 | `:export` | Markdown/TXT writers, Share, WorkManager export jobs |
-| `:ui` | Theme + shared Compose components |
-| `:navigation` | Single-activity NavHost + Home/History/Settings/Processing |
+| `:ui` | Celestial dark theme (Sora), glass/gradient components, bottom nav |
+| `:navigation` | Bottom-nav host + Home/Create/Voice/Documents/Templates/Profile/Store/Processing |
 | `:app` | `ThoughtFlowApp`, `MainActivity`, Hilt, packaging |
 
 ### Voice session state machine
@@ -93,10 +93,15 @@ Without these, release builds still assemble (unsigned / debug-fallback for loca
 3. Run `:app` on a device/emulator with Google speech services (for STT).
 4. Hold the mic → speak → release → edit the generated document.
 
-## Settings
+## Settings / Profile
 
+- **On-device AI** — runtime detection of AICore, Gemini Nano feature status, GenAI SDK linkage, and on-device speech
 - **Prefer on-device** — try Gemini Nano, then always-available heuristic formatter
 - **Allow cloud LLM** — optional OpenAI-compatible HTTP fallback
+
+## UI
+
+Celestial dark theme (`#0D0D12`) with purple/blue brand gradients, Sora typography, glass cards, and a 5-tab bottom bar (Home, Documents, Create, Templates, Profile).
 
 ## License
 
