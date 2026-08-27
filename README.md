@@ -12,13 +12,13 @@ Raw audio is **never** permanently stored.
 |:---:|:---:|:---:|
 | ![Home](docs/screenshots/home.png) | ![Documents](docs/screenshots/documents.png) | ![Create](docs/screenshots/create.png) |
 
-| Templates | Voice Input | Listening |
+| Templates | Store | Profile |
 |:---:|:---:|:---:|
-| ![Templates](docs/screenshots/templates.png) | ![Voice Input](docs/screenshots/voice.png) | ![Listening](docs/screenshots/listening.png) |
+| ![Templates](docs/screenshots/templates.png) | ![Store](docs/screenshots/store.png) | ![Profile](docs/screenshots/profile.png) |
 
-| Profile |
-|:---:|
-| ![Profile](docs/screenshots/profile.png) |
+| Voice Input | Listening |
+|:---:|:---:|
+| ![Voice Input](docs/screenshots/voice.png) | ![Listening](docs/screenshots/listening.png) |
 
 ## Architecture
 
