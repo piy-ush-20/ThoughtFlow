@@ -6,6 +6,16 @@ Speak naturally → continuous speech-to-text → AI structuring → editable Ma
 
 Raw audio is **never** permanently stored.
 
+## Screenshots
+
+| Home | Documents | Create |
+|:---:|:---:|:---:|
+| ![Home](docs/screenshots/home.png) | ![Documents](docs/screenshots/documents.png) | ![Create](docs/screenshots/create.png) |
+
+| Templates | Profile |
+|:---:|:---:|
+| ![Templates](docs/screenshots/templates.png) | ![Profile](docs/screenshots/profile.png) |
+
 ## Architecture
 
 Clean Architecture with multi-module Gradle boundaries:
