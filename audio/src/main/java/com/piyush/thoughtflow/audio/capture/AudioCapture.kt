@@ -4,24 +4,27 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
+import com.piyush.thoughtflow.audio.model.AudioChunk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.jvm.Throws
 import kotlin.math.abs
 import kotlin.math.sqrt
-import com.piyush.thoughtflow.audio.model.AudioChunk
 
+/**
+ * PCM capture for engines that accept raw audio.
+ * Do not run in parallel with [android.speech.SpeechRecognizer].
+ */
 class AudioCapture(
-    private val sampleRate: Int = 44100,
+    private val sampleRate: Int = 16_000,
     private val channelConfig: Int = AudioFormat.CHANNEL_IN_MONO,
-    private val audioFormat: Int = AudioFormat.ENCODING_PCM_16BIT
+    private val audioFormat: Int = AudioFormat.ENCODING_PCM_16BIT,
 ) {
     private val _chunks = MutableSharedFlow<AudioChunk>(extraBufferCapacity = 64)
     val chunks: SharedFlow<AudioChunk> = _chunks
@@ -38,13 +41,9 @@ class AudioCapture(
 
     private val bufferSize: Int = maxOf(
         AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat) * 2,
-        4096
+        4096,
     )
 
-    /**
-     * Start capturing. Requires RECORD_AUDIO permission to be granted.
-     * Throws [SecurityException] if permission missing
-     */
     @Throws(SecurityException::class, IllegalStateException::class)
     fun start() {
         if (isCapturing) return
@@ -54,7 +53,7 @@ class AudioCapture(
             sampleRate,
             channelConfig,
             audioFormat,
-            bufferSize
+            bufferSize,
         ).also { record ->
             check(record.state == AudioRecord.STATE_INITIALIZED) {
                 "AudioCapture failed to initialize. Check RECORD_AUDIO permission"
@@ -72,32 +71,35 @@ class AudioCapture(
                     val slice = buffer.copyOf(read)
                     val rms = computeRms(slice)
                     val peak = computePeak(slice)
-                    val chunk = AudioChunk(
-                        samples = slice,
-                        timestampMs = System.currentTimeMillis(),
-                        rms = rms,
-                        peak = peak
+                    _chunks.tryEmit(
+                        AudioChunk(
+                            samples = slice,
+                            timestampMs = System.currentTimeMillis(),
+                            rms = rms,
+                            peak = peak,
+                        ),
                     )
-                    _chunks.tryEmit(chunk)
                     _level.tryEmit(rms)
                 }
             }
         }
 
-        Log.d(TAG, "AudioCapture started - sampleRate=$sampleRate bufferSize=$bufferSize")
+        Log.d(TAG, "AudioCapture started sampleRate=$sampleRate")
     }
 
-    /** Stop capturing and release resources. Safe to call multiple times. */
     fun stop() {
         isCapturing = false
         captureJob?.cancel()
         captureJob = null
-        audioRecord?.apply { stop(); release() }
+        audioRecord?.apply {
+            stop()
+            release()
+        }
         audioRecord = null
         Log.d(TAG, "AudioCapture stopped")
     }
 
-    /** Cancel the internal coroutine scope - call from onDestroy. */
+    /** Clears any held buffers and releases hardware. */
     fun destroy() {
         stop()
         scope.cancel()
@@ -106,13 +108,16 @@ class AudioCapture(
     private fun computeRms(samples: ShortArray): Float {
         if (samples.isEmpty()) return 0f
         var sum = 0.0
-        for (s in samples) sum += (s / 32768.0) * (s / 32768.0)
+        for (s in samples) {
+            val n = s / 32768.0
+            sum += n * n
+        }
         return sqrt(sum / samples.size).toFloat().coerceIn(0f, 1f)
     }
 
     private fun computePeak(samples: ShortArray): Float {
         if (samples.isEmpty()) return 0f
-        return (samples.maxOf { abs(it.toInt()) } / 32768f.coerceIn(0f, 1f))
+        return (samples.maxOf { abs(it.toInt()) } / 32768f).coerceIn(0f, 1f)
     }
 
     companion object {
