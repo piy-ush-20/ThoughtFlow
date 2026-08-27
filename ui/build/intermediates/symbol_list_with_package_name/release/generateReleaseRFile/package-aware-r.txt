@@ -1,0 +1,6 @@
+com.piyush.thoughtflow.ui
+font sora
+font sora_bold
+font sora_medium
+font sora_regular
+font sora_semibold

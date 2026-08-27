@@ -1,0 +1,5 @@
+int font sora 0x0
+int font sora_bold 0x0
+int font sora_medium 0x0
+int font sora_regular 0x0
+int font sora_semibold 0x0

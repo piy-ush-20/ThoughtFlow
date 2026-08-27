@@ -1,0 +1,9 @@
+com.piyush.thoughtflow.editor-pngs-0 /workspace/editor/build/generated/res/pngs/debug
+com.piyush.thoughtflow.editor-updated_navigation_xml-1 /workspace/editor/build/generated/updated_navigation_xml/debug
+com.piyush.thoughtflow.editor-mergeDebugResources-2 /workspace/editor/build/intermediates/incremental/debug/mergeDebugResources/merged.dir
+com.piyush.thoughtflow.editor-mergeDebugResources-3 /workspace/editor/build/intermediates/incremental/debug/mergeDebugResources/stripped.dir
+com.piyush.thoughtflow.editor-debug-4 /workspace/editor/build/intermediates/merged_res/debug/mergeDebugResources
+com.piyush.thoughtflow.editor-debug-5 /workspace/editor/build/intermediates/packaged_res/debug/packageDebugResources
+com.piyush.thoughtflow.editor-debug-6 /workspace/editor/src/debug/res
+com.piyush.thoughtflow.editor-main-7 /workspace/editor/src/main/res
+gradleHome-0 /home/ubuntu/.gradle

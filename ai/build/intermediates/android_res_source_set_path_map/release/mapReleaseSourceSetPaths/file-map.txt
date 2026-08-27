@@ -1,0 +1,9 @@
+com.piyush.thoughtflow.ai-pngs-0 /workspace/ai/build/generated/res/pngs/release
+com.piyush.thoughtflow.ai-updated_navigation_xml-1 /workspace/ai/build/generated/updated_navigation_xml/release
+com.piyush.thoughtflow.ai-mergeReleaseResources-2 /workspace/ai/build/intermediates/incremental/release/mergeReleaseResources/merged.dir
+com.piyush.thoughtflow.ai-mergeReleaseResources-3 /workspace/ai/build/intermediates/incremental/release/mergeReleaseResources/stripped.dir
+com.piyush.thoughtflow.ai-release-4 /workspace/ai/build/intermediates/merged_res/release/mergeReleaseResources
+com.piyush.thoughtflow.ai-release-5 /workspace/ai/build/intermediates/packaged_res/release/packageReleaseResources
+com.piyush.thoughtflow.ai-main-6 /workspace/ai/src/main/res
+com.piyush.thoughtflow.ai-release-7 /workspace/ai/src/release/res
+gradleHome-0 /home/ubuntu/.gradle

@@ -1,0 +1,10 @@
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.create.CreateViewModel
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.create.CreateViewModel
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.history.HistoryViewModel
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.history.HistoryViewModel
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.home.HomeViewModel
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.home.HomeViewModel
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.home.RecordingViewModel
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.home.RecordingViewModel
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.settings.SettingsViewModel
+-keep,allowobfuscation,allowshrinking class com.piyush.thoughtflow.navigation.settings.SettingsViewModel
