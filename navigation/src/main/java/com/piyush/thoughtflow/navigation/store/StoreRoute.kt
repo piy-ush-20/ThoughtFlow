@@ -90,9 +90,9 @@ fun StoreRoute(onBack: () -> Unit) {
             Text("Popular", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
             Spacer(Modifier.height(12.dp))
             listOf(
-                "Pitch Deck Outline" to "₱199",
-                "Business Case" to "₱249",
-                "Research Brief" to "₱149",
+                "Pitch Deck Outline" to "₹199",
+                "Business Case" to "₹249",
+                "Research Brief" to "₹149",
             ).forEach { (title, price) ->
                 GlassCard(
                     contentPadding = PaddingValues(14.dp),
