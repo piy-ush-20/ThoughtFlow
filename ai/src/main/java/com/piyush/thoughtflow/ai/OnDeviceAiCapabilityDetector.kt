@@ -50,7 +50,9 @@ class OnDeviceAiCapabilityDetector (
             onDeviceSpeechAvailable = speech,
             heuristicAvailable = true,
         )
-        Log.i(TAG, "On-device AI capabilities: $capabilities (${capabilities.summaryLabel()})")
+        runCatching {
+            Log.i(TAG, "On-device AI capabilities: $capabilities (${capabilities.summaryLabel()})")
+        }
         capabilities
     }
 
@@ -105,7 +107,9 @@ class AndroidDeviceAiProbes(
             val raw = invokeCheckStatus(client) ?: return OnDeviceFeatureStatus.Unavailable
             FeatureStatusMapper.map(raw)
         }.onFailure { e ->
-            Log.w("OnDeviceAiCaps", "Gemini Nano status probe failed: ${e.message}")
+            runCatching {
+                Log.w("OnDeviceAiCaps", "Gemini Nano status probe failed: ${e.message}")
+            }
         }.getOrDefault(OnDeviceFeatureStatus.Unavailable)
     }
 
