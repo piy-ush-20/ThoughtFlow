@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
@@ -57,9 +59,9 @@ private val demoTemplates = listOf(
     TemplateItem("1", "Meeting Notes", "Documents", false),
     TemplateItem("2", "Project Proposal", "Documents", false),
     TemplateItem("3", "Weekly Plan", "Planning", false),
-    TemplateItem("4", "Pitch Deck Outline", "Presentations", true, "₱199"),
-    TemplateItem("5", "Business Case", "Business", true, "₱249"),
-    TemplateItem("6", "Research Brief", "Documents", true, "₱149"),
+    TemplateItem("4", "Pitch Deck Outline", "Presentations", true, "₹199"),
+    TemplateItem("5", "Business Case", "Business", true, "₹249"),
+    TemplateItem("6", "Research Brief", "Documents", true, "₹149"),
 )
 
 @Composable
@@ -72,14 +74,18 @@ fun TemplatesRoute(
     val filters = listOf("All", "Documents", "Presentations", "Planning", "Business")
     val free = demoTemplates.filter { !it.premium && (filter == "All" || it.category == filter) }
     val premium = demoTemplates.filter { it.premium && (filter == "All" || it.category == filter) }
+    val freeRows = ((free.size + 1) / 2).coerceAtLeast(1)
+    // Card ≈ 14+72+10+title+category+14 ≈ 140dp; include row gaps.
+    val freeGridHeight = (freeRows * 140 + (freeRows - 1) * 12).dp
 
     CosmicBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
-                .padding(bottom = contentBottomPadding.dp),
+                .padding(bottom = contentBottomPadding.dp + 16.dp),
         ) {
             Spacer(Modifier.height(16.dp))
             Text("Templates", color = TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
@@ -99,7 +105,7 @@ fun TemplatesRoute(
             Spacer(Modifier.height(12.dp))
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = Modifier.height(220.dp),
+                modifier = Modifier.height(freeGridHeight),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 userScrollEnabled = false,
