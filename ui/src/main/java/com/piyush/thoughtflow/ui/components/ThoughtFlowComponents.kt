@@ -49,7 +49,7 @@ fun GlassCard(
     content: @Composable () -> Unit,
 ) {
     val shape = RoundedCornerShape(22.dp)
-    Box(
+    Column(
         modifier = modifier
             .clip(shape)
             .background(CosmicCard.copy(alpha = 0.92f))
