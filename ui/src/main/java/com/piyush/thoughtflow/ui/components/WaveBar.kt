@@ -8,14 +8,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.piyush.thoughtflow.ui.theme.BlueElectric
+import com.piyush.thoughtflow.ui.theme.PurplePrimary
 
 @Composable
 fun WaveBar(
     fraction: Float,
-    color: Color,
+    color: Color = PurplePrimary,
     maxHeight: Dp = 20.dp,
 ) {
     Box(
@@ -23,6 +26,8 @@ fun WaveBar(
             .width(4.dp)
             .height(maxHeight * fraction.coerceIn(0.15f, 1f))
             .clip(RoundedCornerShape(50))
-            .background(color),
+            .background(
+                Brush.verticalGradient(listOf(color, BlueElectric.copy(alpha = 0.85f))),
+            ),
     )
 }
