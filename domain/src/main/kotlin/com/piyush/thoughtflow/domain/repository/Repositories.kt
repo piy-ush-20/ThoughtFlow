@@ -6,6 +6,7 @@ import com.piyush.thoughtflow.domain.model.DocumentId
 import com.piyush.thoughtflow.domain.model.ExportFormat
 import com.piyush.thoughtflow.domain.model.ExportResult
 import com.piyush.thoughtflow.domain.model.FormattedDocument
+import com.piyush.thoughtflow.domain.model.OnDeviceAiCapabilities
 import com.piyush.thoughtflow.domain.model.SpeechError
 import com.piyush.thoughtflow.domain.model.Transcript
 import kotlinx.coroutines.flow.Flow
@@ -28,6 +29,7 @@ interface SpeechRepository {
 
 interface AIRepository {
     suspend fun format(text: String): FormattedDocument
+    suspend fun detectOnDeviceCapabilities(): OnDeviceAiCapabilities
 }
 
 interface DocumentRepository {

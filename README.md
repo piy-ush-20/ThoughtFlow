@@ -95,6 +95,7 @@ Without these, release builds still assemble (unsigned / debug-fallback for loca
 
 ## Settings
 
+- **On-device AI** — runtime detection of AICore, Gemini Nano feature status, GenAI SDK linkage, and on-device speech
 - **Prefer on-device** — try Gemini Nano, then always-available heuristic formatter
 - **Allow cloud LLM** — optional OpenAI-compatible HTTP fallback
 
