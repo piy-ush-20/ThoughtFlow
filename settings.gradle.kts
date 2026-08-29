@@ -23,4 +23,15 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ThoughtFlow"
+
 include(":app")
+include(":domain")
+include(":data")
+include(":ui")
+include(":audio")
+include(":speech")
+include(":ai")
+include(":processing")
+include(":editor")
+include(":export")
+include(":navigation")
