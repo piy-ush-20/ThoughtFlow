@@ -1,5 +1,9 @@
-package com.piyush.thoughtflow.ui
+package com.piyush.thoughtflow.ui.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,6 +32,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
 
 import com.piyush.thoughtflow.ui.components.WaveBar
 import com.piyush.thoughtflow.ui.components.GlassIconButton
@@ -47,11 +54,23 @@ private val GlassBorder     = Color(0x55FFFFFF)
 
 @Composable
 fun HomeScreen(
+    viewModel: HomeScreenViewModel = viewModel(),
     onListClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    onMicClick: () -> Unit = {}
 ) {
-    var isListening by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            if (granted) {
+                viewModel.onMicClicked()
+            }
+        }
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    val dynamicScale = 1f + (uiState.audioLevel * 0.25f)
 
     val infiniteTransition = rememberInfiniteTransition(label = "tf_anim")
 
@@ -63,7 +82,7 @@ fun HomeScreen(
 
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue  = if (isListening) 1.18f else 1.04f,
+        targetValue  = if (uiState.isCapturing) 1.18f else 1.04f,
         animationSpec = infiniteRepeatable(
             tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse
         ),
@@ -71,7 +90,7 @@ fun HomeScreen(
     )
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.3f,
-        targetValue  = if (isListening) 0.7f else 0.35f,
+        targetValue  = if (uiState.isCapturing) 0.7f else 0.35f,
         animationSpec = infiniteRepeatable(
             tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse
         ),
@@ -182,7 +201,7 @@ fun HomeScreen(
             style = TextStyle(
                 fontSize   = 22.sp,
                 fontWeight = FontWeight.SemiBold,
-                color      = NavyDark,
+                color = NavyDark,
                 letterSpacing = 0.5.sp,
                 shadow = Shadow(
                     color  = Color.White.copy(alpha = 0.6f),
@@ -193,7 +212,7 @@ fun HomeScreen(
         )
 
         Column(
-            modifier          = Modifier.align(Alignment.Center),
+            modifier = Modifier.align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -202,7 +221,7 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .size(220.dp)
-                        .scale(pulseScale * 1.06f)
+                        .scale(pulseScale * dynamicScale)
                         .background(
                             TealPale.copy(alpha = pulseAlpha * 0.5f),
                             CircleShape
@@ -246,23 +265,34 @@ fun HomeScreen(
                         )
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
-                            indication        = null
+                            indication = null
                         ) {
-                            isListening = !isListening
-                            onMicClick()
+                            val permissionGranted =
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.RECORD_AUDIO
+                                ) == PackageManager.PERMISSION_GRANTED
+
+                            if (permissionGranted) {
+                                viewModel.onMicClicked()
+                            } else {
+                                permissionLauncher.launch(
+                                    Manifest.permission.RECORD_AUDIO
+                                )
+                            }
                         },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Outlined.Mic,
-                        contentDescription = if (isListening) "Stop" else "Speak",
+                        contentDescription = if (uiState.isCapturing) "Stop" else "Speak",
                         tint     = Color.White,
                         modifier = Modifier.size(38.dp)
                     )
                 }
             }
 
-            if (isListening) {
+            if (uiState.isCapturing) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment     = Alignment.CenterVertically
@@ -284,6 +314,16 @@ fun HomeScreen(
                     )
                 )
             }
+
+            Text(
+                text = uiState.transcript,
+                style = TextStyle(
+                    fontSize  = 20.sp,
+                    color     = NavyDark.copy(alpha = 0.5f),
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = 1.sp
+                )
+            )
         }
 
         Box(
@@ -296,7 +336,7 @@ fun HomeScreen(
                 .padding(horizontal = 24.dp, vertical = 12.dp)
         ) {
             Text(
-                text      = if (isListening) "Listening…" else "Your thoughts, captured",
+                text      = if (uiState.isCapturing) "Listening…" else "Your thoughts, captured",
                 textAlign = TextAlign.Center,
                 style     = TextStyle(
                     fontSize   = 13.sp,
