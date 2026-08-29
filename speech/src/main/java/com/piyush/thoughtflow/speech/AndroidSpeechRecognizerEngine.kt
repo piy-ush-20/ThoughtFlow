@@ -51,6 +51,7 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
     private var heardSpeech = false
     private var consecutiveFailures = 0
     private var committedFinal = StringBuilder()
+    private var lastPartial = ""
 
     private val _transcript = MutableStateFlow(Transcript())
     override val transcript: StateFlow<Transcript> = _transcript.asStateFlow()
@@ -126,6 +127,7 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
             heardSpeech = false
             isStarting = false
             committedFinal = StringBuilder()
+            lastPartial = ""
             _transcript.value = Transcript()
             _audioLevel.value = 0f
             ensureRecognizer(forceRecreate = true)
@@ -174,6 +176,7 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
 
     override fun clearTranscript() {
         committedFinal = StringBuilder()
+        lastPartial = ""
         _transcript.value = Transcript()
     }
 
@@ -206,19 +209,15 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
     }
 
     private fun promotePartialToFinal() {
+        commitLastPartialIfNeeded()
         _transcript.update { current ->
-            val finalText = current.finalText.ifBlank {
-                listOf(committedFinal.toString(), current.partialText)
-                    .filter { it.isNotBlank() }
-                    .joinToString(" ")
-                    .trim()
-            }.ifBlank {
-                committedFinal.toString().trim()
+            val finalText = committedFinal.toString().trim().ifBlank {
+                current.displayText.trim()
             }
             if (finalText.isNotBlank() && committedFinal.isEmpty()) {
                 committedFinal.append(finalText)
             }
-            Transcript(partialText = "", finalText = finalText)
+            Transcript(partialText = "", finalText = committedFinal.toString())
         }
     }
 
@@ -255,12 +254,14 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
             putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, appContext.packageName)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale.toLanguageTag())
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, locale.toLanguageTag())
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2_500L)
+            // Keep one STT session open longer so mid-sentence words are not cut
+            // then lost in the restart window.
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 8_000L)
             putExtra(
                 RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,
-                2_500L,
+                4_000L,
             )
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 1_200L)
+            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, preferOffline())
         }
         isStarting = true
         heardSpeech = false
@@ -276,10 +277,13 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
         }
     }
 
-    private fun scheduleRestart(recreate: Boolean) {
+    private fun scheduleRestart(recreate: Boolean, countFailure: Boolean = true) {
         if (!sessionActive || stopping) return
+        commitLastPartialIfNeeded()
         cancelPendingRestarts()
-        consecutiveFailures += 1
+        if (countFailure) {
+            consecutiveFailures += 1
+        }
         if (consecutiveFailures > MAX_CONSECUTIVE_FAILURES) {
             Log.e(TAG, "Giving up after $consecutiveFailures speech failures")
             sessionActive = false
@@ -293,7 +297,11 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
             )
             return
         }
-        val delay = min(RESTART_BASE_DELAY_MS * consecutiveFailures, RESTART_MAX_DELAY_MS)
+        val delay = if (countFailure) {
+            min(RESTART_BASE_DELAY_MS * consecutiveFailures.coerceAtLeast(1), RESTART_MAX_DELAY_MS)
+        } else {
+            RESTART_SUCCESS_DELAY_MS
+        }
         mainHandler.postDelayed({
             if (!sessionActive || stopping) return@postDelayed
             if (recreate) ensureRecognizer(forceRecreate = true)
@@ -311,19 +319,50 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
         mainHandler.removeCallbacksAndMessages(TOKEN_STOP_TIMEOUT)
     }
 
+    private fun preferOffline(): Boolean =
+        android.os.Build.VERSION.SDK_INT >= 31 &&
+            SpeechRecognizer.isOnDeviceRecognitionAvailable(appContext)
+
+    private fun commitLastPartialIfNeeded() {
+        val partial = lastPartial.trim()
+        if (partial.isBlank()) return
+        appendFinal(partial)
+        lastPartial = ""
+    }
+
     private fun appendFinal(text: String) {
-        if (text.isBlank()) return
-        if (committedFinal.isNotEmpty()) committedFinal.append(' ')
-        committedFinal.append(text.trim())
+        val incoming = text.trim()
+        if (incoming.isBlank()) return
+        val current = committedFinal.toString().trim()
+        committedFinal = StringBuilder(mergeUtterance(current, incoming))
+        lastPartial = ""
         _transcript.value = Transcript(
             partialText = "",
             finalText = committedFinal.toString(),
         )
     }
 
+    private fun mergeUtterance(committed: String, incoming: String): String {
+        if (incoming.isBlank()) return committed
+        if (committed.isBlank()) return incoming
+        if (incoming == committed || incoming.startsWith(committed)) return incoming
+        if (committed.endsWith(incoming)) return committed
+        val committedWords = committed.split(Regex("\\s+"))
+        val incomingWords = incoming.split(Regex("\\s+"))
+        val overlap = (min(committedWords.size, incomingWords.size) downTo 1).firstOrNull { n ->
+            committedWords.takeLast(n) == incomingWords.take(n)
+        } ?: 0
+        return if (overlap > 0) {
+            (committedWords + incomingWords.drop(overlap)).joinToString(" ")
+        } else {
+            "$committed $incoming"
+        }
+    }
+
     private fun updatePartial(partial: String) {
+        lastPartial = partial.trim()
         val prefix = committedFinal.toString()
-        val display = listOf(prefix, partial).filter { it.isNotBlank() }.joinToString(" ")
+        val display = listOf(prefix, lastPartial).filter { it.isNotBlank() }.joinToString(" ")
         _transcript.value = Transcript(
             partialText = display,
             finalText = prefix,
@@ -433,7 +472,7 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
                 }
                 SpeechRecognizer.ERROR_NO_MATCH,
                 SpeechRecognizer.ERROR_SPEECH_TIMEOUT,
-                -> scheduleRestart(recreate = false)
+                -> scheduleRestart(recreate = false, countFailure = false)
                 SpeechRecognizer.ERROR_RECOGNIZER_BUSY,
                 SpeechRecognizer.ERROR_CLIENT,
                 SpeechRecognizer.ERROR_SERVER_DISCONNECTED,
@@ -465,12 +504,12 @@ class AndroidSpeechRecognizerEngine @Inject constructor(
 
     companion object {
         private const val TAG = "AndroidSpeechEngine"
-        const val BUILD_MARKER = "v3-activity-context"
-        private const val RESTART_SUCCESS_DELAY_MS = 300L
+        const val BUILD_MARKER = "v4-commit-partials"
+        private const val RESTART_SUCCESS_DELAY_MS = 50L
         private const val RESTART_BASE_DELAY_MS = 400L
         private const val RESTART_MAX_DELAY_MS = 2_000L
         private const val TEARDOWN_DELAY_MS = 300L
-        private const val STOP_TIMEOUT_MS = 2_500L
+        private const val STOP_TIMEOUT_MS = 3_000L
         private const val MAX_CONSECUTIVE_FAILURES = 12
         private val TOKEN_RESTART = Any()
         private val TOKEN_TEARDOWN = Any()

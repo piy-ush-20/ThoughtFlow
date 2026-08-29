@@ -86,8 +86,6 @@ class VoiceDocumentPipeline @Inject constructor(
     }
 
     fun finishSession() {
-        observeJob?.cancel()
-        observeJob = null
         errorsJob?.cancel()
         errorsJob = null
         stopListening()
@@ -95,6 +93,8 @@ class VoiceDocumentPipeline @Inject constructor(
         formatJob = scope.launch {
             // Wait for the engine to flush final partials / onResults after stopListening().
             val text = awaitFinalTranscript()
+            observeJob?.cancel()
+            observeJob = null
             reduce(VoiceSessionEvent.FinishListening)
             if (text.isBlank()) {
                 cleanupSpeech()
@@ -198,7 +198,7 @@ class VoiceDocumentPipeline @Inject constructor(
     }
 
     companion object {
-        private const val FINAL_WAIT_MS = 2_000L
-        private const val EXTRA_POLL_MS = 1_000L
+        private const val FINAL_WAIT_MS = 3_000L
+        private const val EXTRA_POLL_MS = 1_500L
     }
 }
