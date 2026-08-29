@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -118,11 +119,11 @@ fun ProfileScreen(
             Spacer(Modifier.height(14.dp))
             GlassCard(contentPadding = PaddingValues(16.dp)) {
                 Text("On-device AI", color = TextPrimary, fontWeight = FontWeight.Medium)
+                Spacer(Modifier.height(6.dp))
                 Text(
                     onDeviceSummary,
-                    color = SuccessGreen,
+                    color = onDeviceStatusColor(onDeviceSummary),
                     fontSize = 13.sp,
-                    modifier = Modifier.padding(top = 6.dp),
                 )
             }
 
@@ -172,5 +173,16 @@ private fun ProfileRow(
             }
             Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = TextMuted)
         }
+    }
+}
+
+private fun onDeviceStatusColor(summary: String): Color {
+    val lower = summary.lowercase()
+    return when {
+        lower.contains("ready") -> SuccessGreen
+        lower.contains("download") -> TextSecondary
+        lower.contains("not installed") || lower.contains("unavailable") || lower.contains("stub") ->
+            DangerRed
+        else -> TextSecondary
     }
 }
