@@ -13,8 +13,13 @@ data class Transcript(
             else -> finalText
         }
 
+    /**
+     * Text that should be formatted after stop. Must match what the listening
+     * UI showed: live [partialText] already includes committed finals plus the
+     * current utterance. Using [finalText] alone drops the last words.
+     */
     val committedText: String
-        get() = finalText.ifBlank { partialText }
+        get() = displayText.trim()
 }
 
 enum class DocumentStatus {
