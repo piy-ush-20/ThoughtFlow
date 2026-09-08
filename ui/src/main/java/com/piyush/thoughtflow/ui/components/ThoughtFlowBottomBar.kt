@@ -32,12 +32,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.piyush.thoughtflow.ui.theme.BlueElectric
-import com.piyush.thoughtflow.ui.theme.CosmicBorder
-import com.piyush.thoughtflow.ui.theme.CosmicSurface
-import com.piyush.thoughtflow.ui.theme.PurpleDeep
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.TextMuted
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
 
 enum class ThoughtFlowTab {
     Home,
@@ -53,14 +48,22 @@ fun ThoughtFlowBottomBar(
     onSelect: (ThoughtFlowTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val colors = ThoughtFlowTheme.colors
     val shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     Row(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
+            .then(
+                if (colors.isLight) {
+                    Modifier.shadow(12.dp, shape, ambientColor = colors.shadowTint, spotColor = colors.shadowTint)
+                } else {
+                    Modifier
+                },
+            )
             .clip(shape)
-            .background(CosmicSurface.copy(alpha = 0.96f))
-            .border(1.dp, CosmicBorder, shape)
+            .background(colors.bottomBarBackground.copy(alpha = if (colors.isLight) 1f else 0.96f))
+            .border(1.dp, colors.border, shape)
             .padding(horizontal = 10.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -100,6 +103,7 @@ private fun RowScope.TabIcon(
     onClick: () -> Unit,
     contentDescription: String,
 ) {
+    val colors = ThoughtFlowTheme.colors
     Box(
         modifier = Modifier
             .weight(1f)
@@ -114,7 +118,7 @@ private fun RowScope.TabIcon(
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = if (selected) PurplePrimary else TextMuted,
+            tint = if (selected) colors.primary else colors.textMuted,
             modifier = Modifier.size(24.dp),
         )
     }
@@ -122,13 +126,14 @@ private fun RowScope.TabIcon(
 
 @Composable
 private fun CreateFab(onClick: () -> Unit) {
+    val colors = ThoughtFlowTheme.colors
     Box(
         modifier = Modifier
             .padding(horizontal = 4.dp)
             .size(56.dp)
-            .shadow(18.dp, CircleShape, ambientColor = PurplePrimary.copy(alpha = 0.55f), spotColor = PurplePrimary)
+            .shadow(18.dp, CircleShape, ambientColor = colors.shadowTint, spotColor = colors.shadowTint)
             .clip(CircleShape)
-            .background(Brush.linearGradient(listOf(PurpleDeep, PurplePrimary, BlueElectric)))
+            .background(Brush.linearGradient(listOf(colors.primaryDeep, colors.primary, colors.accentBlue)))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {

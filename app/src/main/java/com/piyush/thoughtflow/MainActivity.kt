@@ -4,9 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.piyush.thoughtflow.navigation.ThoughtFlowNavHost
 import com.piyush.thoughtflow.speech.SpeechEngine
-import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+import com.piyush.thoughtflow.ui.ThoughtFlowRoot
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -20,9 +19,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ThoughtFlowTheme {
-                ThoughtFlowNavHost()
-            }
+            ThoughtFlowRoot()
         }
     }
 

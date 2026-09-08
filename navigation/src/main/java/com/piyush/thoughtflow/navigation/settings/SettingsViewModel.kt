@@ -3,6 +3,7 @@ package com.piyush.thoughtflow.navigation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.piyush.thoughtflow.domain.model.AiPreferences
+import com.piyush.thoughtflow.domain.model.ThemeMode
 import com.piyush.thoughtflow.domain.model.OnDeviceAiCapabilities
 import com.piyush.thoughtflow.domain.repository.SettingsRepository
 import com.piyush.thoughtflow.domain.usecase.DetectOnDeviceAiCapabilitiesUseCase
@@ -66,6 +67,12 @@ class SettingsViewModel @Inject constructor(
     fun saveApiKey(apiKey: String?) {
         viewModelScope.launch {
             settingsRepository.setCloudApiKey(apiKey)
+        }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch {
+            settingsRepository.updatePreferences { it.copy(themeMode = mode) }
         }
     }
 }

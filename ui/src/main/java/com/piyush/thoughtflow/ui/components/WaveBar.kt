@@ -12,22 +12,22 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.piyush.thoughtflow.ui.theme.BlueElectric
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
 
 @Composable
 fun WaveBar(
     fraction: Float,
-    color: Color = PurplePrimary,
+    color: Color = ThoughtFlowTheme.colors.primary,
     maxHeight: Dp = 20.dp,
 ) {
+    val colors = ThoughtFlowTheme.colors
     Box(
         modifier = Modifier
             .width(4.dp)
             .height(maxHeight * fraction.coerceIn(0.15f, 1f))
             .clip(RoundedCornerShape(50))
             .background(
-                Brush.verticalGradient(listOf(color, BlueElectric.copy(alpha = 0.85f))),
+                Brush.verticalGradient(listOf(color, colors.accentBlue.copy(alpha = 0.85f))),
             ),
     )
 }

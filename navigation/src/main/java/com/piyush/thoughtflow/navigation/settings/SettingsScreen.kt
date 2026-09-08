@@ -1,5 +1,8 @@
 package com.piyush.thoughtflow.navigation.settings
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -39,21 +42,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.piyush.thoughtflow.domain.model.OnDeviceAiCapabilities
 import com.piyush.thoughtflow.domain.model.OnDeviceFeatureStatus
+import com.piyush.thoughtflow.domain.model.ThemeMode
 import com.piyush.thoughtflow.ui.components.CosmicBackground
 import com.piyush.thoughtflow.ui.components.GlassCard
 import com.piyush.thoughtflow.ui.components.GlassIconButton
-import com.piyush.thoughtflow.ui.theme.CosmicBorder
-import com.piyush.thoughtflow.ui.theme.CosmicSurfaceElevated
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.TextMuted
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 
 @Composable
 fun SettingsRoute(
     onBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
+    val colors = ThoughtFlowTheme.colors
     val prefs by viewModel.preferences.collectAsStateWithLifecycle()
     val capabilities by viewModel.capabilities.collectAsStateWithLifecycle()
     var apiKeyDraft by remember { mutableStateOf("") }
@@ -75,23 +74,28 @@ fun SettingsRoute(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 GlassIconButton(onClick = onBack, contentDescription = "Back") {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = TextPrimary)
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = colors.textPrimary)
                 }
                 Spacer(Modifier.weight(1f))
-                Text("AI Preferences", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                Text("AI Preferences", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                 Spacer(Modifier.weight(1f))
                 Spacer(Modifier.size(46.dp))
             }
 
             Text(
                 "Providers are selected automatically. The UI never talks to a vendor SDK directly.",
-                color = TextSecondary,
+                color = colors.textSecondary,
                 fontSize = 13.sp,
             )
 
             OnDeviceCapabilitiesCard(
                 capabilities = capabilities,
                 onRefresh = viewModel::refreshCapabilities,
+            )
+
+            AppearanceSection(
+                themeMode = prefs.themeMode,
+                onThemeModeChange = viewModel::setThemeMode,
             )
 
             SettingsSwitchRow(
@@ -129,7 +133,7 @@ fun SettingsRoute(
                         Button(
                             onClick = { viewModel.saveApiKey(apiKeyDraft.ifBlank { null }) },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = PurplePrimary),
+                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
                         ) {
                             Text("Save API key")
                         }
@@ -139,9 +143,63 @@ fun SettingsRoute(
 
             Text(
                 "Privacy: raw audio is never stored. Temporary files, if any, are deleted after processing.",
-                color = TextMuted,
+                color = colors.textMuted,
                 fontSize = 12.sp,
             )
+        }
+    }
+}
+
+@Composable
+private fun AppearanceSection(
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
+) {
+    val colors = ThoughtFlowTheme.colors
+    GlassCard(contentPadding = PaddingValues(16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Appearance", color = colors.textPrimary, fontWeight = FontWeight.SemiBold)
+            Text(
+                "Day theme is the default product design. Night uses the celestial dark palette.",
+                color = colors.textMuted,
+                fontSize = 12.sp,
+            )
+            ThemeModeOption(
+                label = "Day (Light)",
+                selected = themeMode == ThemeMode.Light,
+                onClick = { onThemeModeChange(ThemeMode.Light) },
+            )
+            ThemeModeOption(
+                label = "Night (Dark)",
+                selected = themeMode == ThemeMode.Dark,
+                onClick = { onThemeModeChange(ThemeMode.Dark) },
+            )
+            ThemeModeOption(
+                label = "System default",
+                selected = themeMode == ThemeMode.System,
+                onClick = { onThemeModeChange(ThemeMode.System) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeModeOption(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val colors = ThoughtFlowTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, color = colors.textPrimary, modifier = Modifier.weight(1f))
+        if (selected) {
+            Text("Selected", color = colors.primary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -151,20 +209,21 @@ private fun OnDeviceCapabilitiesCard(
     capabilities: OnDeviceAiCapabilities,
     onRefresh: () -> Unit,
 ) {
+    val colors = ThoughtFlowTheme.colors
     GlassCard(contentPadding = PaddingValues(16.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "On-device AI",
-                    color = TextPrimary,
+                    color = colors.textPrimary,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f),
                 )
                 TextButton(onClick = onRefresh) {
-                    Text("Refresh", color = PurplePrimary)
+                    Text("Refresh", color = colors.primary)
                 }
             }
-            Text(capabilities.summaryLabel(), color = TextSecondary, fontSize = 13.sp)
+            Text(capabilities.summaryLabel(), color = colors.textSecondary, fontSize = 13.sp)
             CapabilityLine(
                 "AICore",
                 when {
@@ -192,9 +251,10 @@ private fun OnDeviceCapabilitiesCard(
 
 @Composable
 private fun CapabilityLine(label: String, value: String) {
+    val colors = ThoughtFlowTheme.colors
     Row(modifier = Modifier.fillMaxWidth()) {
-        Text(label, modifier = Modifier.weight(1f), color = TextMuted, fontSize = 12.sp)
-        Text(value, color = TextSecondary, fontSize = 12.sp)
+        Text(label, modifier = Modifier.weight(1f), color = colors.textMuted, fontSize = 12.sp)
+        Text(value, color = colors.textSecondary, fontSize = 12.sp)
     }
 }
 
@@ -213,18 +273,19 @@ private fun SettingsSwitchRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
+    val colors = ThoughtFlowTheme.colors
     GlassCard(contentPadding = PaddingValues(14.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(title, color = TextPrimary, fontWeight = FontWeight.Medium)
-                Text(subtitle, color = TextMuted, fontSize = 12.sp)
+                Text(title, color = colors.textPrimary, fontWeight = FontWeight.Medium)
+                Text(subtitle, color = colors.textMuted, fontSize = 12.sp)
             }
             Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
-                    checkedTrackColor = PurplePrimary,
-                    checkedThumbColor = TextPrimary,
+                    checkedTrackColor = colors.primary,
+                    checkedThumbColor = colors.textPrimary,
                 ),
             )
         }
@@ -238,6 +299,7 @@ private fun SettingsField(
     label: String,
     password: Boolean = false,
 ) {
+    val colors = ThoughtFlowTheme.colors
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -246,15 +308,15 @@ private fun SettingsField(
         singleLine = true,
         visualTransformation = if (password) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = PurplePrimary,
-            unfocusedBorderColor = CosmicBorder,
-            focusedTextColor = TextPrimary,
-            unfocusedTextColor = TextPrimary,
-            focusedContainerColor = CosmicSurfaceElevated,
-            unfocusedContainerColor = CosmicSurfaceElevated,
-            focusedLabelColor = TextSecondary,
-            unfocusedLabelColor = TextMuted,
-            cursorColor = PurplePrimary,
+            focusedBorderColor = colors.primary,
+            unfocusedBorderColor = colors.border,
+            focusedTextColor = colors.textPrimary,
+            unfocusedTextColor = colors.textPrimary,
+            focusedContainerColor = colors.surfaceElevated,
+            unfocusedContainerColor = colors.surfaceElevated,
+            focusedLabelColor = colors.textSecondary,
+            unfocusedLabelColor = colors.textMuted,
+            cursorColor = colors.primary,
         ),
     )
 }

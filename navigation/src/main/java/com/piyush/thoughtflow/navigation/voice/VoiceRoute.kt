@@ -1,5 +1,7 @@
 package com.piyush.thoughtflow.navigation.voice
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.view.HapticFeedbackConstants
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
@@ -58,15 +61,7 @@ import com.piyush.thoughtflow.ui.components.CosmicBackground
 import com.piyush.thoughtflow.ui.components.GlassIconButton
 import com.piyush.thoughtflow.ui.components.GradientButton
 import com.piyush.thoughtflow.ui.components.WaveBar
-import com.piyush.thoughtflow.ui.theme.BlueElectric
-import com.piyush.thoughtflow.ui.theme.GlassBorder
-import com.piyush.thoughtflow.ui.theme.GlassWhite
-import com.piyush.thoughtflow.ui.theme.PurpleDeep
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
 import com.piyush.thoughtflow.ui.theme.PurpleSoft
-import com.piyush.thoughtflow.ui.theme.TextMuted
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 
 @Composable
 fun VoiceRoute(
@@ -126,6 +121,7 @@ fun VoiceScreen(
     onFinish: () -> Unit,
     hasMicPermission: (android.content.Context) -> Boolean,
 ) {
+    val colors = ThoughtFlowTheme.colors
     val context = LocalContext.current
     val view = LocalView.current
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -163,12 +159,12 @@ fun VoiceScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 GlassIconButton(onClick = onBack, contentDescription = "Back") {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = TextPrimary)
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = colors.textPrimary)
                 }
                 Spacer(Modifier.weight(1f))
                 Text(
                     text = if (isCapturing) "Listening…" else "Voice Input",
-                    color = TextPrimary,
+                    color = colors.textPrimary,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp,
                 )
@@ -184,14 +180,14 @@ fun VoiceScreen(
             ) {
                 Text(
                     text = if (isCapturing) "Listening…" else "Tap the mic to start",
-                    color = TextPrimary,
+                    color = colors.textPrimary,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "Your audio stays private — never stored",
-                    color = TextMuted,
+                    color = colors.textMuted,
                     fontSize = 13.sp,
                 )
 
@@ -202,7 +198,7 @@ fun VoiceScreen(
                         Modifier
                             .size(220.dp)
                             .scale(pulse * (1f + audioLevel * 0.2f))
-                            .background(PurplePrimary.copy(alpha = 0.18f), CircleShape),
+                            .background(colors.primary.copy(alpha = 0.18f), CircleShape),
                     )
                     Box(
                         Modifier
@@ -214,14 +210,14 @@ fun VoiceScreen(
                         Modifier
                             .size(130.dp)
                             .clip(CircleShape)
-                            .background(GlassWhite)
-                            .border(1.dp, GlassBorder, CircleShape),
+                            .background(colors.glassBackground)
+                            .border(1.dp, colors.glassBorder, CircleShape),
                     )
                     Box(
                         modifier = Modifier
                             .size(92.dp)
                             .clip(CircleShape)
-                            .background(Brush.linearGradient(listOf(PurpleDeep, PurplePrimary, BlueElectric)))
+                            .background(Brush.linearGradient(listOf(colors.primaryDeep, colors.primary, colors.accentBlue)))
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
@@ -235,7 +231,7 @@ fun VoiceScreen(
                             },
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Outlined.Mic, null, tint = TextPrimary, modifier = Modifier.size(36.dp))
+                        Icon(Icons.Outlined.Mic, null, tint = Color.White, modifier = Modifier.size(36.dp))
                     }
                 }
 
@@ -256,7 +252,7 @@ fun VoiceScreen(
                 Spacer(Modifier.height(24.dp))
                 Text(
                     text = transcript.ifBlank { " " },
-                    color = TextSecondary,
+                    color = colors.textSecondary,
                     fontSize = 16.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 12.dp),

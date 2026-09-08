@@ -1,5 +1,7 @@
 package com.piyush.thoughtflow.editor
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -53,13 +55,6 @@ import com.piyush.thoughtflow.domain.model.ExportFormat
 import com.piyush.thoughtflow.export.ExportRepositoryImpl
 import com.piyush.thoughtflow.ui.components.CosmicBackground
 import com.piyush.thoughtflow.ui.components.GlassIconButton
-import com.piyush.thoughtflow.ui.theme.CosmicBorder
-import com.piyush.thoughtflow.ui.theme.CosmicSurface
-import com.piyush.thoughtflow.ui.theme.CosmicSurfaceElevated
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.TextMuted
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
 @Composable
@@ -67,6 +62,7 @@ fun EditorRoute(
     onBack: () -> Unit,
     viewModel: EditorViewModel = hiltViewModel(),
 ) {
+    val colors = ThoughtFlowTheme.colors
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -93,24 +89,24 @@ fun EditorRoute(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 GlassIconButton(onClick = onBack, contentDescription = "Back") {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = TextPrimary)
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = colors.textPrimary)
                 }
                 Spacer(Modifier.weight(1f))
-                Text("Editor", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                Text("Editor", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = viewModel::save) {
-                    Text("Save", color = PurplePrimary, fontWeight = FontWeight.SemiBold)
+                    Text("Save", color = colors.primary, fontWeight = FontWeight.SemiBold)
                 }
                 IconButton(onClick = { exportMenu = true }) {
-                    Icon(Icons.Outlined.Share, contentDescription = "Export", tint = TextPrimary)
+                    Icon(Icons.Outlined.Share, contentDescription = "Export", tint = colors.textPrimary)
                 }
                 DropdownMenu(
                     expanded = exportMenu,
                     onDismissRequest = { exportMenu = false },
-                    containerColor = CosmicSurface,
+                    containerColor = colors.surface,
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Share Markdown", color = TextPrimary) },
+                        text = { Text("Share Markdown", color = colors.textPrimary) },
                         onClick = {
                             exportMenu = false
                             scope.launch {
@@ -121,7 +117,7 @@ fun EditorRoute(
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text("Share Plain text", color = TextPrimary) },
+                        text = { Text("Share Plain text", color = colors.textPrimary) },
                         onClick = {
                             exportMenu = false
                             scope.launch {
@@ -132,7 +128,7 @@ fun EditorRoute(
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text("Queue Markdown export", color = TextPrimary) },
+                        text = { Text("Queue Markdown export", color = colors.textPrimary) },
                         onClick = {
                             exportMenu = false
                             viewModel.enqueueExport(ExportFormat.Markdown)
@@ -148,15 +144,15 @@ fun EditorRoute(
                     .padding(horizontal = 16.dp),
             ) {
                 val fieldColors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PurplePrimary,
-                    unfocusedBorderColor = CosmicBorder,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary,
-                    focusedContainerColor = CosmicSurfaceElevated,
-                    unfocusedContainerColor = CosmicSurfaceElevated,
-                    focusedLabelColor = TextSecondary,
-                    unfocusedLabelColor = TextMuted,
-                    cursorColor = PurplePrimary,
+                    focusedBorderColor = colors.primary,
+                    unfocusedBorderColor = colors.border,
+                    focusedTextColor = colors.textPrimary,
+                    unfocusedTextColor = colors.textPrimary,
+                    focusedContainerColor = colors.surfaceElevated,
+                    unfocusedContainerColor = colors.surfaceElevated,
+                    focusedLabelColor = colors.textSecondary,
+                    unfocusedLabelColor = colors.textMuted,
+                    cursorColor = colors.primary,
                 )
                 OutlinedTextField(
                     value = uiState.title,
@@ -179,7 +175,7 @@ fun EditorRoute(
                 uiState.formatterUsed?.let {
                     Text(
                         text = "Formatted by: $it",
-                        color = TextMuted,
+                        color = colors.textMuted,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
                     )
@@ -191,15 +187,15 @@ fun EditorRoute(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
                     .clip(RoundedCornerShape(18.dp))
-                    .background(CosmicSurfaceElevated)
+                    .background(colors.surfaceElevated)
                     .padding(horizontal = 8.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Outlined.Title, null, tint = TextSecondary, modifier = Modifier.size(22.dp))
-                Icon(Icons.Outlined.FormatBold, null, tint = TextSecondary, modifier = Modifier.size(22.dp))
-                Icon(Icons.AutoMirrored.Outlined.FormatListBulleted, null, tint = TextSecondary, modifier = Modifier.size(22.dp))
-                Icon(Icons.Outlined.AutoAwesome, null, tint = PurplePrimary, modifier = Modifier.size(22.dp))
+                Icon(Icons.Outlined.Title, null, tint = colors.textSecondary, modifier = Modifier.size(22.dp))
+                Icon(Icons.Outlined.FormatBold, null, tint = colors.textSecondary, modifier = Modifier.size(22.dp))
+                Icon(Icons.AutoMirrored.Outlined.FormatListBulleted, null, tint = colors.textSecondary, modifier = Modifier.size(22.dp))
+                Icon(Icons.Outlined.AutoAwesome, null, tint = colors.primary, modifier = Modifier.size(22.dp))
             }
 
             SnackbarHost(snackbar, Modifier.padding(8.dp))

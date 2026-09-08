@@ -59,12 +59,24 @@ data class ExportResult(
     val format: ExportFormat,
 )
 
+enum class ThemeMode {
+    /** Follow Android system light/dark setting. */
+    System,
+
+    /** Light day theme — primary product design. */
+    Light,
+
+    /** Dark night theme — celestial cosmic palette. */
+    Dark,
+}
+
 data class AiPreferences(
     val preferOnDevice: Boolean = true,
     val allowCloud: Boolean = false,
     val cloudApiKey: String? = null,
     val cloudBaseUrl: String = "https://api.openai.com/v1",
     val cloudModel: String = "gpt-4o-mini",
+    val themeMode: ThemeMode = ThemeMode.Light,
 )
 
 /**
