@@ -11,6 +11,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import com.piyush.thoughtflow.domain.model.AiPreferences
+import com.piyush.thoughtflow.domain.model.ThemeMode
 import com.piyush.thoughtflow.domain.repository.SettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -45,6 +46,7 @@ class SettingsRepositoryImpl @Inject constructor(
             cloudApiKey = null,
             cloudBaseUrl = prefs[KEY_CLOUD_BASE_URL] ?: "https://api.openai.com/v1",
             cloudModel = prefs[KEY_CLOUD_MODEL] ?: "gpt-4o-mini",
+            themeMode = prefs[KEY_THEME_MODE]?.toThemeMode() ?: ThemeMode.Light,
         )
     }
 
@@ -55,12 +57,14 @@ class SettingsRepositoryImpl @Inject constructor(
                 allowCloud = prefs[KEY_ALLOW_CLOUD] ?: false,
                 cloudBaseUrl = prefs[KEY_CLOUD_BASE_URL] ?: "https://api.openai.com/v1",
                 cloudModel = prefs[KEY_CLOUD_MODEL] ?: "gpt-4o-mini",
+                themeMode = prefs[KEY_THEME_MODE]?.toThemeMode() ?: ThemeMode.Light,
             )
             val next = transform(current)
             prefs[KEY_PREFER_ON_DEVICE] = next.preferOnDevice
             prefs[KEY_ALLOW_CLOUD] = next.allowCloud
             prefs[KEY_CLOUD_BASE_URL] = next.cloudBaseUrl
             prefs[KEY_CLOUD_MODEL] = next.cloudModel
+            prefs[KEY_THEME_MODE] = next.themeMode.storageValue()
         }
     }
 
@@ -80,6 +84,20 @@ class SettingsRepositoryImpl @Inject constructor(
         private val KEY_ALLOW_CLOUD = booleanPreferencesKey("allow_cloud")
         private val KEY_CLOUD_BASE_URL = stringPreferencesKey("cloud_base_url")
         private val KEY_CLOUD_MODEL = stringPreferencesKey("cloud_model")
+        private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
         private const val SECRET_API_KEY = "cloud_api_key"
     }
+}
+
+private fun ThemeMode.storageValue(): String = when (this) {
+    ThemeMode.System -> "system"
+    ThemeMode.Light -> "light"
+    ThemeMode.Dark -> "dark"
+}
+
+private fun String.toThemeMode(): ThemeMode = when (this) {
+    "system" -> ThemeMode.System
+    "light" -> ThemeMode.Light
+    "dark" -> ThemeMode.Dark
+    else -> ThemeMode.Light
 }

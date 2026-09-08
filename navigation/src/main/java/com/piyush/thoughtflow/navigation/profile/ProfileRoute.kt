@@ -1,5 +1,8 @@
 package com.piyush.thoughtflow.navigation.profile
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowColors
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -34,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,13 +47,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.piyush.thoughtflow.navigation.settings.SettingsViewModel
 import com.piyush.thoughtflow.ui.components.CosmicBackground
 import com.piyush.thoughtflow.ui.components.GlassCard
-import com.piyush.thoughtflow.ui.theme.BrandGradient
-import com.piyush.thoughtflow.ui.theme.DangerRed
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.SuccessGreen
-import com.piyush.thoughtflow.ui.theme.TextMuted
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 
 @Composable
 fun ProfileRoute(
@@ -76,6 +73,7 @@ fun ProfileScreen(
     onOpenAiPreferences: () -> Unit,
     contentBottomPadding: Int = 0,
 ) {
+    val colors = ThoughtFlowTheme.colors
     CosmicBackground {
         Column(
             modifier = Modifier
@@ -86,7 +84,7 @@ fun ProfileScreen(
                 .padding(bottom = contentBottomPadding.dp + 16.dp),
         ) {
             Spacer(Modifier.height(16.dp))
-            Text("Profile", color = TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
+            Text("Profile", color = colors.textPrimary, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(20.dp))
 
             GlassCard(contentPadding = PaddingValues(18.dp)) {
@@ -95,22 +93,22 @@ fun ProfileScreen(
                         modifier = Modifier
                             .size(64.dp)
                             .clip(CircleShape)
-                            .background(BrandGradient),
+                            .background(colors.brandGradient),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text("TF", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("TF", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     }
                     Spacer(Modifier.size(14.dp))
                     Column {
-                        Text("ThoughtFlow User", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                        Text("ThoughtFlow User", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                         Box(
                             modifier = Modifier
                                 .padding(top = 6.dp)
                                 .clip(RoundedCornerShape(50))
-                                .background(PurplePrimary.copy(alpha = 0.2f))
+                                .background(colors.primary.copy(alpha = 0.2f))
                                 .padding(horizontal = 10.dp, vertical = 4.dp),
                         ) {
-                            Text("Offline-first", color = PurplePrimary, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                            Text("Offline-first", color = colors.primary, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                         }
                     }
                 }
@@ -118,11 +116,11 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(14.dp))
             GlassCard(contentPadding = PaddingValues(16.dp)) {
-                Text("On-device AI", color = TextPrimary, fontWeight = FontWeight.Medium)
+                Text("On-device AI", color = colors.textPrimary, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(6.dp))
                 Text(
                     onDeviceSummary,
-                    color = onDeviceStatusColor(onDeviceSummary),
+                    color = onDeviceStatusColor(onDeviceSummary, colors),
                     fontSize = 13.sp,
                 )
             }
@@ -139,7 +137,7 @@ fun ProfileScreen(
             Spacer(Modifier.height(20.dp))
             Text(
                 "Sign Out",
-                color = DangerRed,
+                color = colors.danger,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -157,6 +155,7 @@ private fun ProfileRow(
     onClick: () -> Unit,
     badge: String? = null,
 ) {
+    val colors = ThoughtFlowTheme.colors
     GlassCard(
         onClick = onClick,
         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 14.dp),
@@ -165,24 +164,24 @@ private fun ProfileRow(
             .padding(bottom = 10.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, null, tint = PurplePrimary, modifier = Modifier.size(22.dp))
+            Icon(icon, null, tint = colors.primary, modifier = Modifier.size(22.dp))
             Spacer(Modifier.size(12.dp))
-            Text(title, color = TextPrimary, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
+            Text(title, color = colors.textPrimary, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
             if (badge != null) {
-                Text(badge, color = TextMuted, fontSize = 11.sp, modifier = Modifier.padding(end = 8.dp))
+                Text(badge, color = colors.textMuted, fontSize = 11.sp, modifier = Modifier.padding(end = 8.dp))
             }
-            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = TextMuted)
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = colors.textMuted)
         }
     }
 }
 
-private fun onDeviceStatusColor(summary: String): Color {
+private fun onDeviceStatusColor(summary: String, colors: ThoughtFlowColors): Color {
     val lower = summary.lowercase()
     return when {
-        lower.contains("ready") -> SuccessGreen
-        lower.contains("download") -> TextSecondary
+        lower.contains("ready") -> colors.success
+        lower.contains("download") -> colors.textSecondary
         lower.contains("not installed") || lower.contains("unavailable") || lower.contains("stub") ->
-            DangerRed
-        else -> TextSecondary
+            colors.danger
+        else -> colors.textSecondary
     }
 }

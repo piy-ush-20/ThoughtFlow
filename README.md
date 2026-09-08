@@ -115,7 +115,13 @@ Without these, release builds still assemble (unsigned / debug-fallback for loca
 
 ## UI
 
-Celestial dark theme (`#0D0D12`) with purple/blue brand gradients, Sora typography, glass cards, and a 5-tab bottom bar (Home, Documents, Create, Templates, Profile).
+**Day theme (default)** — light lavender canvas (`#F5F6FA`), white cards with soft shadows, purple brand accents. This is the final product design direction.
+
+**Night theme** — celestial dark palette (`#0D0D12`) with glass cards and gradient accents.
+
+Switch in **Profile → Settings → Appearance** (Day / Night / System).
+
+Typography: Sora. Components: glass/elevated cards, gradient buttons, 5-tab bottom bar (Home, Documents, Create, Templates, Profile).
 
 ## License
 
