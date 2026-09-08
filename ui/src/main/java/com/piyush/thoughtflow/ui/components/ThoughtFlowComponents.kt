@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,21 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.piyush.thoughtflow.ui.theme.BrandGradient
-import com.piyush.thoughtflow.ui.theme.CosmicBorder
-import com.piyush.thoughtflow.ui.theme.CosmicCard
-import com.piyush.thoughtflow.ui.theme.CosmicSurfaceElevated
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.TextMuted
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
 
 @Composable
 fun GlassCard(
@@ -48,12 +39,25 @@ fun GlassCard(
     contentPadding: PaddingValues = PaddingValues(16.dp),
     content: @Composable () -> Unit,
 ) {
+    val colors = ThoughtFlowTheme.colors
     val shape = RoundedCornerShape(22.dp)
     Column(
         modifier = modifier
+            .then(
+                if (colors.useCardShadow) {
+                    Modifier.shadow(
+                        elevation = 8.dp,
+                        shape = shape,
+                        ambientColor = colors.shadowTint,
+                        spotColor = colors.shadowTint,
+                    )
+                } else {
+                    Modifier
+                },
+            )
             .clip(shape)
-            .background(CosmicCard.copy(alpha = 0.92f))
-            .border(1.dp, CosmicBorder, shape)
+            .background(colors.card.copy(alpha = colors.cardAlpha))
+            .border(1.dp, colors.border, shape)
             .then(
                 if (onClick != null) {
                     Modifier.clickable(
@@ -79,6 +83,7 @@ fun GradientButton(
     enabled: Boolean = true,
     leadingIcon: ImageVector? = null,
 ) {
+    val colors = ThoughtFlowTheme.colors
     val shape = RoundedCornerShape(18.dp)
     Row(
         modifier = modifier
@@ -87,11 +92,11 @@ fun GradientButton(
             .shadow(
                 elevation = if (enabled) 16.dp else 0.dp,
                 shape = shape,
-                ambientColor = PurplePrimary.copy(alpha = 0.45f),
-                spotColor = PurplePrimary.copy(alpha = 0.55f),
+                ambientColor = colors.shadowTint,
+                spotColor = colors.shadowTint,
             )
             .clip(shape)
-            .background(if (enabled) BrandGradient else Brush.horizontalGradient(listOf(Color(0xFF3A3A48), Color(0xFF3A3A48))))
+            .background(if (enabled) colors.brandGradient else colors.disabledButtonGradient)
             .clickable(enabled = enabled, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
@@ -116,13 +121,14 @@ fun SectionHeader(
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
+    val colors = ThoughtFlowTheme.colors
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = title,
-            color = TextPrimary,
+            color = colors.textPrimary,
             fontWeight = FontWeight.SemiBold,
             fontSize = 17.sp,
             modifier = Modifier.weight(1f),
@@ -130,7 +136,7 @@ fun SectionHeader(
         if (actionLabel != null && onAction != null) {
             Text(
                 text = actionLabel,
-                color = PurplePrimary,
+                color = colors.primary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.clickable(onClick = onAction),
@@ -146,18 +152,19 @@ fun FilterChip(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
+    val colors = ThoughtFlowTheme.colors
     val shape = RoundedCornerShape(50)
     Box(
         modifier = modifier
             .clip(shape)
-            .background(if (selected) PurplePrimary else CosmicSurfaceElevated)
-            .border(1.dp, if (selected) PurplePrimary else CosmicBorder, shape)
+            .background(if (selected) colors.primary else colors.surfaceElevated)
+            .border(1.dp, if (selected) colors.primary else colors.border, shape)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Text(
             text = label,
-            color = if (selected) Color.White else TextSecondary,
+            color = if (selected) Color.White else colors.textSecondary,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
         )
@@ -170,8 +177,9 @@ fun QuickActionTile(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    accent: Color = PurplePrimary,
+    accent: Color = ThoughtFlowTheme.colors.primary,
 ) {
+    val colors = ThoughtFlowTheme.colors
     GlassCard(
         modifier = modifier,
         onClick = onClick,
@@ -186,12 +194,12 @@ fun QuickActionTile(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(accent.copy(alpha = 0.18f)),
+                    .background(accent.copy(alpha = if (colors.isLight) 0.12f else 0.18f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(icon, contentDescription = null, tint = accent, modifier = Modifier.size(22.dp))
             }
-            Text(title, color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+            Text(title, color = colors.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -204,14 +212,22 @@ fun SearchField(
     placeholder: String = "Search",
     trailing: (@Composable () -> Unit)? = null,
 ) {
+    val colors = ThoughtFlowTheme.colors
     val shape = RoundedCornerShape(50)
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(48.dp)
+            .then(
+                if (colors.useCardShadow) {
+                    Modifier.shadow(4.dp, shape, ambientColor = colors.shadowTint, spotColor = colors.shadowTint)
+                } else {
+                    Modifier
+                },
+            )
             .clip(shape)
-            .background(CosmicSurfaceElevated)
-            .border(1.dp, CosmicBorder, shape)
+            .background(colors.surfaceElevated)
+            .border(1.dp, colors.border, shape)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -219,11 +235,11 @@ fun SearchField(
             value = value,
             onValueChange = onValueChange,
             singleLine = true,
-            textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp),
+            textStyle = TextStyle(color = colors.textPrimary, fontSize = 14.sp),
             modifier = Modifier.weight(1f),
             decorationBox = { inner ->
                 if (value.isEmpty()) {
-                    Text(placeholder, color = TextMuted, fontSize = 14.sp)
+                    Text(placeholder, color = colors.textMuted, fontSize = 14.sp)
                 }
                 inner()
             },

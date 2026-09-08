@@ -19,12 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.piyush.thoughtflow.ui.theme.BlueCyan
-import com.piyush.thoughtflow.ui.theme.BlueElectric
-import com.piyush.thoughtflow.ui.theme.CosmicBlack
-import com.piyush.thoughtflow.ui.theme.PinkAccent
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.ScreenGradient
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
 
 @Composable
 fun CosmicBackground(
@@ -32,6 +27,7 @@ fun CosmicBackground(
     animated: Boolean = true,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val colors = ThoughtFlowTheme.colors
     val infinite = rememberInfiniteTransition(label = "cosmic")
     val drift by infinite.animateFloat(
         initialValue = 0f,
@@ -40,8 +36,8 @@ fun CosmicBackground(
         label = "drift",
     )
     val pulse by infinite.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.55f,
+        initialValue = if (colors.isLight) 0.55f else 0.35f,
+        targetValue = if (colors.isLight) 0.75f else 0.55f,
         animationSpec = infiniteRepeatable(tween(3200), RepeatMode.Reverse),
         label = "pulse",
     )
@@ -49,43 +45,44 @@ fun CosmicBackground(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(ScreenGradient),
+            .background(colors.screenGradient),
     ) {
-        // Soft radial washes — avoid Modifier.blur(), which often renders as hard rectangles on device.
         GlowOrb(
             size = 320.dp,
             x = (-90).dp + if (animated) (drift * 18).dp else 0.dp,
             y = 100.dp + if (animated) (drift * 12).dp else 0.dp,
-            color = PurplePrimary.copy(alpha = if (animated) pulse else 0.28f),
+            color = colors.glowPurple.copy(alpha = if (animated) pulse else colors.glowPurple.alpha),
         )
         GlowOrb(
             size = 280.dp,
             x = 180.dp - if (animated) (drift * 14).dp else 0.dp,
             y = 40.dp - if (animated) (drift * 10).dp else 0.dp,
-            color = BlueElectric.copy(alpha = 0.22f),
+            color = colors.glowBlue,
         )
         GlowOrb(
             size = 240.dp,
             x = 20.dp,
             y = 520.dp,
-            color = PinkAccent.copy(alpha = 0.12f),
+            color = colors.glowPink,
         )
         GlowOrb(
             size = 200.dp,
             x = 240.dp,
             y = 640.dp,
-            color = BlueCyan.copy(alpha = 0.14f),
+            color = colors.glowCyan,
         )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(Color.Transparent, CosmicBlack.copy(alpha = 0.65f)),
-                        radius = 1200f,
+        if (!colors.isLight) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(Color.Transparent, colors.scrimOverlay),
+                            radius = 1200f,
+                        ),
                     ),
-                ),
-        )
+            )
+        }
         content()
     }
 }

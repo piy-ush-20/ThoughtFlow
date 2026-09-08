@@ -1,5 +1,7 @@
 package com.piyush.thoughtflow.navigation.documents
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,12 +47,6 @@ import com.piyush.thoughtflow.navigation.history.HistoryViewModel
 import com.piyush.thoughtflow.ui.components.CosmicBackground
 import com.piyush.thoughtflow.ui.components.FilterChip
 import com.piyush.thoughtflow.ui.components.GlassCard
-import com.piyush.thoughtflow.ui.theme.CosmicSurface
-import com.piyush.thoughtflow.ui.theme.DangerRed
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.TextMuted
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 import java.text.DateFormat
 import java.util.Date
 
@@ -61,6 +57,7 @@ fun DocumentsRoute(
     contentBottomPadding: Int = 0,
     viewModel: HistoryViewModel = hiltViewModel(),
 ) {
+    val colors = ThoughtFlowTheme.colors
     val documents by viewModel.documents.collectAsStateWithLifecycle()
     var selectedFilter by remember { mutableStateOf("All") }
     var menuDoc by remember { mutableStateOf<Document?>(null) }
@@ -79,16 +76,16 @@ fun DocumentsRoute(
         ModalBottomSheet(
             onDismissRequest = { menuDoc = null },
             sheetState = sheetState,
-            containerColor = CosmicSurface,
+            containerColor = colors.surface,
         ) {
             Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
-                Text(doc.title, color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                Text(doc.title, color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                 Spacer(Modifier.height(16.dp))
                 MenuRow("Open", onClick = {
                     menuDoc = null
                     onOpenDocument(doc.id.value)
                 })
-                MenuRow("Delete", tint = DangerRed, onClick = {
+                MenuRow("Delete", tint = colors.danger, onClick = {
                     viewModel.delete(doc.id)
                     menuDoc = null
                 })
@@ -107,6 +104,7 @@ fun DocumentsScreen(
     onOpenMenu: (Document) -> Unit,
     contentBottomPadding: Int = 0,
 ) {
+    val colors = ThoughtFlowTheme.colors
     val filters = listOf("All", "My Documents", "Shared", "Favorites")
     CosmicBackground {
         Column(
@@ -116,7 +114,7 @@ fun DocumentsScreen(
                 .padding(horizontal = 20.dp),
         ) {
             Spacer(Modifier.height(16.dp))
-            Text("Documents", color = TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
+            Text("Documents", color = colors.textPrimary, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(16.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(filters.size) { index ->
@@ -133,7 +131,7 @@ fun DocumentsScreen(
                 GlassCard {
                     Text(
                         "No documents yet. Capture a thought from Create → Voice Input.",
-                        color = TextSecondary,
+                        color = colors.textSecondary,
                         fontSize = 13.sp,
                     )
                 }
@@ -161,6 +159,7 @@ private fun DocumentRow(
     onClick: () -> Unit,
     onMenu: () -> Unit,
 ) {
+    val colors = ThoughtFlowTheme.colors
     val date = remember(document.updatedAtEpochMs) {
         DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
             .format(Date(document.updatedAtEpochMs))
@@ -174,32 +173,37 @@ private fun DocumentRow(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(PurplePrimary.copy(alpha = 0.18f)),
+                    .background(colors.primary.copy(alpha = 0.18f)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Outlined.Description, null, tint = PurplePrimary)
+                Icon(Icons.Outlined.Description, null, tint = colors.primary)
             }
             Spacer(Modifier.size(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(document.title.ifBlank { "Untitled" }, color = TextPrimary, fontWeight = FontWeight.Medium)
+                Text(document.title.ifBlank { "Untitled" }, color = colors.textPrimary, fontWeight = FontWeight.Medium)
                 Text(
                     "Edited $date · ${document.wordCount} words",
-                    color = TextMuted,
+                    color = colors.textMuted,
                     fontSize = 12.sp,
                 )
             }
             IconButton(onClick = onMenu) {
-                Icon(Icons.Outlined.IosShare, contentDescription = "Actions", tint = TextMuted)
+                Icon(Icons.Outlined.IosShare, contentDescription = "Actions", tint = colors.textMuted)
             }
         }
     }
 }
 
 @Composable
-private fun MenuRow(label: String, onClick: () -> Unit, tint: androidx.compose.ui.graphics.Color = TextPrimary) {
+private fun MenuRow(
+    label: String,
+    onClick: () -> Unit,
+    tint: androidx.compose.ui.graphics.Color? = null,
+) {
+    val colors = ThoughtFlowTheme.colors
     Text(
         text = label,
-        color = tint,
+        color = tint ?: colors.textPrimary,
         fontSize = 16.sp,
         modifier = Modifier
             .fillMaxWidth()

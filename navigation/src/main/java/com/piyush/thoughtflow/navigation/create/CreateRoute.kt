@@ -1,5 +1,7 @@
 package com.piyush.thoughtflow.navigation.create
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,12 +37,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.piyush.thoughtflow.ui.components.CosmicBackground
 import com.piyush.thoughtflow.ui.components.GlassCard
 import com.piyush.thoughtflow.ui.components.QuickActionTile
-import com.piyush.thoughtflow.ui.theme.BlueElectric
-import com.piyush.thoughtflow.ui.theme.BrandGradient
-import com.piyush.thoughtflow.ui.theme.CosmicSurfaceElevated
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 
 @Composable
 fun CreateRoute(
@@ -70,6 +67,7 @@ fun CreateScreen(
     onOpenTemplates: () -> Unit,
     contentBottomPadding: Int = 0,
 ) {
+    val colors = ThoughtFlowTheme.colors
     CosmicBackground {
         Column(
             modifier = Modifier
@@ -80,10 +78,10 @@ fun CreateScreen(
                 .padding(bottom = contentBottomPadding.dp + 16.dp),
         ) {
             Spacer(Modifier.height(16.dp))
-            Text("Create", color = TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
+            Text("Create", color = colors.textPrimary, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
             Text(
                 "Choose how you want to start",
-                color = TextSecondary,
+                color = colors.textSecondary,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(top = 4.dp, bottom = 22.dp),
             )
@@ -98,17 +96,17 @@ fun CreateScreen(
                         modifier = Modifier
                             .size(56.dp)
                             .clip(RoundedCornerShape(18.dp))
-                            .background(BrandGradient),
+                            .background(colors.brandGradient),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Outlined.Mic, null, tint = TextPrimary)
+                        Icon(Icons.Outlined.Mic, null, tint = Color.White)
                     }
                     Spacer(Modifier.size(16.dp))
                     Column {
-                        Text("Voice Input", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                        Text("Voice Input", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                         Text(
                             "Speak naturally — AI structures it",
-                            color = TextSecondary,
+                            color = colors.textSecondary,
                             fontSize = 13.sp,
                             modifier = Modifier.padding(top = 4.dp),
                         )
@@ -128,17 +126,17 @@ fun CreateScreen(
                         modifier = Modifier
                             .size(56.dp)
                             .clip(RoundedCornerShape(18.dp))
-                            .background(CosmicSurfaceElevated),
+                            .background(colors.surfaceElevated),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Outlined.Description, null, tint = BlueElectric)
+                        Icon(Icons.Outlined.Description, null, tint = colors.accentBlue)
                     }
                     Spacer(Modifier.size(16.dp))
                     Column {
-                        Text("Text Input", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                        Text("Text Input", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                         Text(
                             "Start with a blank canvas",
-                            color = TextSecondary,
+                            color = colors.textSecondary,
                             fontSize = 13.sp,
                             modifier = Modifier.padding(top = 4.dp),
                         )
@@ -147,7 +145,7 @@ fun CreateScreen(
             }
 
             Spacer(Modifier.height(28.dp))
-            Text("More options", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            Text("More options", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 QuickActionTile(
@@ -155,21 +153,21 @@ fun CreateScreen(
                     icon = Icons.Outlined.Description,
                     onClick = onBlankDocument,
                     modifier = Modifier.weight(1f),
-                    accent = PurplePrimary,
+                    accent = colors.primary,
                 )
                 QuickActionTile(
                     title = "Templates",
                     icon = Icons.Outlined.UploadFile,
                     onClick = onOpenTemplates,
                     modifier = Modifier.weight(1f),
-                    accent = BlueElectric,
+                    accent = colors.accentBlue,
                 )
                 QuickActionTile(
                     title = "From Link",
                     icon = Icons.Outlined.Link,
                     onClick = onOpenTemplates,
                     modifier = Modifier.weight(1f),
-                    accent = PurplePrimary,
+                    accent = colors.primary,
                 )
             }
         }

@@ -1,5 +1,7 @@
 package com.piyush.thoughtflow.navigation.store
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,13 +34,10 @@ import com.piyush.thoughtflow.ui.components.CosmicBackground
 import com.piyush.thoughtflow.ui.components.GlassCard
 import com.piyush.thoughtflow.ui.components.GlassIconButton
 import com.piyush.thoughtflow.ui.components.GradientButton
-import com.piyush.thoughtflow.ui.theme.BrandGradient
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 
 @Composable
 fun StoreRoute(onBack: () -> Unit) {
+    val colors = ThoughtFlowTheme.colors
     CosmicBackground {
         Column(
             modifier = Modifier
@@ -54,10 +54,10 @@ fun StoreRoute(onBack: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 GlassIconButton(onClick = onBack, contentDescription = "Back") {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = TextPrimary)
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = colors.textPrimary)
                 }
                 Spacer(Modifier.weight(1f))
-                Text("Store", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                Text("Store", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                 Spacer(Modifier.weight(1f))
                 Box(Modifier.size(46.dp))
             }
@@ -69,16 +69,16 @@ fun StoreRoute(onBack: () -> Unit) {
                         .fillMaxWidth()
                         .height(140.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(BrandGradient),
+                        .background(colors.brandGradient),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Outlined.AutoAwesome, null, tint = TextPrimary, modifier = Modifier.size(48.dp))
+                    Icon(Icons.Outlined.AutoAwesome, null, tint = Color.White, modifier = Modifier.size(48.dp))
                 }
                 Spacer(Modifier.height(16.dp))
-                Text("Premium Templates", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 22.sp)
+                Text("Premium Templates", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 22.sp)
                 Text(
                     "Unlock polished structures for proposals, decks, and plans.",
-                    color = TextSecondary,
+                    color = colors.textSecondary,
                     fontSize = 13.sp,
                     modifier = Modifier.padding(top = 6.dp),
                 )
@@ -87,7 +87,7 @@ fun StoreRoute(onBack: () -> Unit) {
             }
 
             Spacer(Modifier.height(22.dp))
-            Text("Popular", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+            Text("Popular", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
             Spacer(Modifier.height(12.dp))
             listOf(
                 "Pitch Deck Outline" to "₹199",
@@ -101,8 +101,8 @@ fun StoreRoute(onBack: () -> Unit) {
                         .padding(bottom = 10.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(title, color = TextPrimary, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
-                        Text(price, color = PurplePrimary, fontWeight = FontWeight.SemiBold)
+                        Text(title, color = colors.textPrimary, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
+                        Text(price, color = colors.primary, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }

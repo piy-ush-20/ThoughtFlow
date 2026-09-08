@@ -1,5 +1,7 @@
 package com.piyush.thoughtflow.navigation.templates
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,11 +44,6 @@ import com.piyush.thoughtflow.ui.components.FilterChip
 import com.piyush.thoughtflow.ui.components.GlassCard
 import com.piyush.thoughtflow.ui.components.GradientButton
 import com.piyush.thoughtflow.ui.components.SectionHeader
-import com.piyush.thoughtflow.ui.theme.BrandGradient
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.TextMuted
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 
 data class TemplateItem(
     val id: String,
@@ -70,6 +68,7 @@ fun TemplatesRoute(
     onOpenStore: () -> Unit,
     contentBottomPadding: Int = 0,
 ) {
+    val colors = ThoughtFlowTheme.colors
     var filter by remember { mutableStateOf("All") }
     val filters = listOf("All", "Documents", "Presentations", "Planning", "Business")
     val free = demoTemplates.filter { !it.premium && (filter == "All" || it.category == filter) }
@@ -88,10 +87,10 @@ fun TemplatesRoute(
                 .padding(bottom = contentBottomPadding.dp + 16.dp),
         ) {
             Spacer(Modifier.height(16.dp))
-            Text("Templates", color = TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
+            Text("Templates", color = colors.textPrimary, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
             Text(
                 "Smart structures for faster drafting",
-                color = TextSecondary,
+                color = colors.textSecondary,
                 fontSize = 13.sp,
                 modifier = Modifier.padding(top = 4.dp, bottom = 16.dp),
             )
@@ -130,15 +129,15 @@ fun TemplatesRoute(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(BrandGradient),
+                                .background(colors.brandGradient),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Icon(Icons.Outlined.Lock, null, tint = TextPrimary, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Outlined.Lock, null, tint = Color.White, modifier = Modifier.size(18.dp))
                         }
                         Spacer(Modifier.size(12.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(item.title, color = TextPrimary, fontWeight = FontWeight.Medium)
-                            Text("Premium · ${item.priceLabel}", color = PurplePrimary, fontSize = 12.sp)
+                            Text(item.title, color = colors.textPrimary, fontWeight = FontWeight.Medium)
+                            Text("Premium · ${item.priceLabel}", color = colors.primary, fontSize = 12.sp)
                         }
                     }
                 }
@@ -151,19 +150,20 @@ fun TemplatesRoute(
 
 @Composable
 private fun TemplateCard(item: TemplateItem, onClick: () -> Unit) {
+    val colors = ThoughtFlowTheme.colors
     GlassCard(onClick = onClick, contentPadding = PaddingValues(14.dp)) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(72.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(PurplePrimary.copy(alpha = 0.16f)),
+                .background(colors.primary.copy(alpha = 0.16f)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Outlined.Description, null, tint = PurplePrimary)
+            Icon(Icons.Outlined.Description, null, tint = colors.primary)
         }
         Spacer(Modifier.height(10.dp))
-        Text(item.title, color = TextPrimary, fontWeight = FontWeight.Medium, fontSize = 13.sp, maxLines = 2)
-        Text(item.category, color = TextMuted, fontSize = 11.sp)
+        Text(item.title, color = colors.textPrimary, fontWeight = FontWeight.Medium, fontSize = 13.sp, maxLines = 2)
+        Text(item.category, color = colors.textMuted, fontSize = 11.sp)
     }
 }

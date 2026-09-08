@@ -1,5 +1,7 @@
 package com.piyush.thoughtflow.navigation.processing
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -45,13 +47,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.piyush.thoughtflow.domain.model.VoiceSessionState
 import com.piyush.thoughtflow.navigation.home.RecordingViewModel
 import com.piyush.thoughtflow.ui.components.CosmicBackground
-import com.piyush.thoughtflow.ui.theme.BlueElectric
-import com.piyush.thoughtflow.ui.theme.PurpleDeep
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.SuccessGreen
-import com.piyush.thoughtflow.ui.theme.TextMuted
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 import kotlinx.coroutines.delay
 
 @Composable
@@ -75,6 +70,7 @@ fun ProcessingRoute(
 
 @Composable
 fun ProcessingScreen(isFormatting: Boolean = true) {
+    val colors = ThoughtFlowTheme.colors
     val infinite = rememberInfiniteTransition(label = "processing")
     val scale by infinite.animateFloat(
         initialValue = 0.92f,
@@ -112,7 +108,7 @@ fun ProcessingScreen(isFormatting: Boolean = true) {
                         .size(180.dp)
                         .scale(scale)
                         .background(
-                            Brush.radialGradient(listOf(PurplePrimary.copy(alpha = 0.45f), PurpleDeep.copy(alpha = 0.05f))),
+                            Brush.radialGradient(listOf(colors.primary.copy(alpha = 0.45f), colors.primaryDeep.copy(alpha = 0.05f))),
                             CircleShape,
                         ),
                 )
@@ -120,16 +116,16 @@ fun ProcessingScreen(isFormatting: Boolean = true) {
                     modifier = Modifier
                         .size(110.dp)
                         .background(
-                            Brush.linearGradient(listOf(PurpleDeep, PurplePrimary, BlueElectric)),
+                            Brush.linearGradient(listOf(colors.primaryDeep, colors.primary, colors.accentBlue)),
                             CircleShape,
                         ),
                 )
             }
             Spacer(Modifier.height(28.dp))
-            Text("Shaping your document…", color = TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+            Text("Shaping your document…", color = colors.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
             Text(
                 "Structuring thoughts offline-first",
-                color = TextSecondary,
+                color = colors.textSecondary,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(top = 6.dp),
             )
@@ -144,22 +140,22 @@ fun ProcessingScreen(isFormatting: Boolean = true) {
                             modifier = Modifier
                                 .size(22.dp)
                                 .clip(CircleShape)
-                                .background(if (done) SuccessGreen.copy(alpha = 0.2f) else PurplePrimary.copy(alpha = 0.15f)),
+                                .background(if (done) colors.success.copy(alpha = 0.2f) else colors.primary.copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center,
                         ) {
                             if (done) {
-                                Icon(Icons.Outlined.Check, null, tint = SuccessGreen, modifier = Modifier.size(14.dp))
+                                Icon(Icons.Outlined.Check, null, tint = colors.success, modifier = Modifier.size(14.dp))
                             } else {
                                 Box(
                                     Modifier
                                         .size(8.dp)
                                         .clip(CircleShape)
-                                        .background(PurplePrimary),
+                                        .background(colors.primary),
                                 )
                             }
                         }
                         Spacer(Modifier.size(12.dp))
-                        Text(label, color = if (done) TextPrimary else TextMuted, fontSize = 14.sp)
+                        Text(label, color = if (done) colors.textPrimary else colors.textMuted, fontSize = 14.sp)
                     }
                 }
             }
@@ -170,13 +166,13 @@ fun ProcessingScreen(isFormatting: Boolean = true) {
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(RoundedCornerShape(50)),
-                color = PurplePrimary,
-                trackColor = PurplePrimary.copy(alpha = 0.15f),
+                color = colors.primary,
+                trackColor = colors.primary.copy(alpha = 0.15f),
                 strokeCap = StrokeCap.Round,
             )
             Text(
                 "${(progress * 100).toInt()}%",
-                color = TextMuted,
+                color = colors.textMuted,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(top = 10.dp, bottom = 36.dp),
             )

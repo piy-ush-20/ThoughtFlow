@@ -1,5 +1,7 @@
 package com.piyush.thoughtflow.navigation.home
 
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,13 +50,6 @@ import com.piyush.thoughtflow.ui.components.GlassCard
 import com.piyush.thoughtflow.ui.components.QuickActionTile
 import com.piyush.thoughtflow.ui.components.SearchField
 import com.piyush.thoughtflow.ui.components.SectionHeader
-import com.piyush.thoughtflow.ui.theme.BlueElectric
-import com.piyush.thoughtflow.ui.theme.BrandGradient
-import com.piyush.thoughtflow.ui.theme.PinkAccent
-import com.piyush.thoughtflow.ui.theme.PurplePrimary
-import com.piyush.thoughtflow.ui.theme.TextMuted
-import com.piyush.thoughtflow.ui.theme.TextPrimary
-import com.piyush.thoughtflow.ui.theme.TextSecondary
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
@@ -90,6 +86,7 @@ fun HomeScreen(
     onOpenDocument: (String) -> Unit,
     contentBottomPadding: Int = 0,
 ) {
+    val colors = ThoughtFlowTheme.colors
     var query by remember { mutableStateOf("") }
     val greeting = remember {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
@@ -117,13 +114,13 @@ fun HomeScreen(
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = "$greeting 👋",
-                        color = TextPrimary,
+                        color = colors.textPrimary,
                         fontSize = 26.sp,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = "Speak. Structure. Create.",
-                        color = TextSecondary,
+                        color = colors.textSecondary,
                         fontSize = 13.sp,
                         modifier = Modifier.padding(top = 4.dp),
                     )
@@ -132,10 +129,10 @@ fun HomeScreen(
                     modifier = Modifier
                         .size(46.dp)
                         .clip(CircleShape)
-                        .background(BrandGradient),
+                        .background(colors.brandGradient),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("TF", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("TF", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
             }
 
@@ -145,7 +142,7 @@ fun HomeScreen(
                 onValueChange = { query = it },
                 placeholder = "Search documents",
                 trailing = {
-                    Icon(Icons.Outlined.Tune, contentDescription = null, tint = TextMuted, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Outlined.Tune, contentDescription = null, tint = colors.textMuted, modifier = Modifier.size(20.dp))
                 },
             )
 
@@ -156,10 +153,10 @@ fun HomeScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Create New", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                        Text("Create New", color = colors.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                         Text(
                             "Turn voice into structured docs",
-                            color = TextSecondary,
+                            color = colors.textSecondary,
                             fontSize = 13.sp,
                             modifier = Modifier.padding(top = 4.dp),
                         )
@@ -168,10 +165,10 @@ fun HomeScreen(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(BrandGradient),
+                            .background(colors.brandGradient),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Outlined.Add, null, tint = TextPrimary)
+                        Icon(Icons.Outlined.Add, null, tint = Color.White)
                     }
                 }
             }
@@ -188,21 +185,21 @@ fun HomeScreen(
                     icon = Icons.Outlined.Mic,
                     onClick = onOpenVoice,
                     modifier = Modifier.weight(1f),
-                    accent = PurplePrimary,
+                    accent = colors.primary,
                 )
                 QuickActionTile(
                     title = "Create New",
                     icon = Icons.Outlined.Add,
                     onClick = onOpenCreate,
                     modifier = Modifier.weight(1f),
-                    accent = BlueElectric,
+                    accent = colors.accentBlue,
                 )
                 QuickActionTile(
                     title = "Templates",
                     icon = Icons.Outlined.FileUpload,
                     onClick = onOpenTemplates,
                     modifier = Modifier.weight(1f),
-                    accent = PinkAccent,
+                    accent = colors.accentPink,
                 )
             }
 
@@ -217,7 +214,7 @@ fun HomeScreen(
                 GlassCard {
                     Text(
                         "No documents yet. Tap Voice Input to capture your first thought.",
-                        color = TextSecondary,
+                        color = colors.textSecondary,
                         fontSize = 13.sp,
                     )
                 }
@@ -235,6 +232,7 @@ fun HomeScreen(
 
 @Composable
 private fun ContinueCard(document: Document, onClick: () -> Unit) {
+    val colors = ThoughtFlowTheme.colors
     val date = remember(document.updatedAtEpochMs) {
         DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
             .format(Date(document.updatedAtEpochMs))
@@ -249,21 +247,21 @@ private fun ContinueCard(document: Document, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(PurplePrimary.copy(alpha = 0.2f)),
+                    .background(colors.primary.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Outlined.Description, null, tint = PurplePrimary, modifier = Modifier.size(20.dp))
+                Icon(Icons.Outlined.Description, null, tint = colors.primary, modifier = Modifier.size(20.dp))
             }
             Spacer(Modifier.width(10.dp))
             Column {
                 Text(
                     text = document.title.ifBlank { "Untitled" },
-                    color = TextPrimary,
+                    color = colors.textPrimary,
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp,
                     maxLines = 1,
                 )
-                Text("Edited $date", color = TextMuted, fontSize = 11.sp, maxLines = 1)
+                Text("Edited $date", color = colors.textMuted, fontSize = 11.sp, maxLines = 1)
             }
         }
     }

@@ -13,9 +13,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
-import com.piyush.thoughtflow.ui.theme.GlassBorder
-import com.piyush.thoughtflow.ui.theme.GlassWhite
+import com.piyush.thoughtflow.ui.theme.ThoughtFlowTheme
 
 @Composable
 fun GlassIconButton(
@@ -24,12 +24,20 @@ fun GlassIconButton(
     contentDescription: String,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val colors = ThoughtFlowTheme.colors
     Box(
         modifier = modifier
             .size(46.dp)
+            .then(
+                if (colors.useCardShadow) {
+                    Modifier.shadow(4.dp, CircleShape, ambientColor = colors.shadowTint, spotColor = colors.shadowTint)
+                } else {
+                    Modifier
+                },
+            )
             .clip(CircleShape)
-            .background(GlassWhite)
-            .border(1.dp, GlassBorder, CircleShape)
+            .background(colors.glassBackground)
+            .border(1.dp, colors.glassBorder, CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
