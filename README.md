@@ -123,6 +123,18 @@ Switch in **Profile → Settings → Appearance** (Day / Night / System).
 
 Typography: Sora. Components: glass/elevated cards, gradient buttons, 5-tab bottom bar (Home, Documents, Create, Templates, Profile).
 
+## Verified commits (GitHub)
+
+GitHub only shows the green **Verified** badge when a commit is signed with an [SSH or GPG key linked to your account](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification). Commits made from Cloud Agent are left **unsigned** on purpose (Cursor’s signing key would show as **Unverified**).
+
+To verify the latest commit after you pull `main`:
+
+```bash
+git pull origin main
+git commit --amend -S --no-edit   # SSH signing must be set up locally
+git push --force-with-lease origin main
+```
+
 ## License
 
 Private / all rights reserved unless otherwise stated.
